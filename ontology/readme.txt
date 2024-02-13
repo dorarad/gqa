@@ -1,16 +1,12 @@
-************** cAttrs.txt: ontology over attributes: **************
-format: attribute;frequency;type;extra-annotations
+Definition of the scene graphs ontology.
+Consists of 3 txt files: objects.txt, attributes.txt, and relations.txt.
+txt2json.py translates these txt files into jsons that are then consumed by create_questions.
 
-For extra annotations:
+Each txt file consists of a list objects/attributes/relations, annotated by differnet labels that are used during question generation.
 
-1) S: Similar attributes. e.g. S:beige,gray,light blue. Questions shouldn't ask for distinguishing between them. In other words, if object is white,
-we shouldn't create a question: "Is the object beige? no", since white and brige may be too similar to allow distinguishing.
-We can ask however, "Is the object red? no", since red and white and distant enough.
+Each line is formatted as: 
+In objects.txt: object name,frequency,category name,annotations
+In attributes.txt: attribute name;frequency;attribute type;annotations
+In relations.txt: relation,frequency,relation type,annotations
 
-2) E: 
-
-3) N:
-
-4) P:
-
-
+See txt2json.py for the definition of specific extra annotations. 
