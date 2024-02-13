@@ -104,14 +104,14 @@ topFiles = { # x -> [(y,n),...]
 }
 
 vocabFiles = {
-    "o": "vg14/cObjsNV.json",
-    "a": "vg14/cAttrsNV.json",
-    "r": "vg14/cRelsNV.json"
+    "o": "vg14/objects.json",
+    "a": "vg14/attributes.json",
+    "r": "vg14/relations.json"
 }
 
 catsFiles = {
-    "o": "vg14/objects.json",
-    "a": "vg14/attributes.json",
+    "o": "vg14/object_categories.json",
+    "a": "vg14/attribute_categories.json",
 }
 
 countFiles = {
