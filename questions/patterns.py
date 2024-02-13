@@ -1,3 +1,7 @@
+# Definitions of GQA's category-tree, annotations of attributes and relations,
+# and a list of all the porbablistic templates used in GQA to instantiate questions,
+# grouped by question type (exist, logical and/or, attribute-query, attribute-verification, etc etc.).
+
 objCats = {
     "None": ['thing', 'meal', 'drink', 'alive', 'plant', 'building', 'part', 'symbol', 'place', 'env', 'sign', ""],
     'env': ["nature environment", "urban environment", 'vehicle', 'watercraft', 'aircraft'],
