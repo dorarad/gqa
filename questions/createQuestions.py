@@ -29,17 +29,17 @@ parser.add_argument('--mo', default=0.15, type = float)
 parser.add_argument('--mi', default=0.35, type = float)
 parser.add_argument('--iSize', default=0.75, type = float)
 parser.add_argument('--aSize', default=0.55, type = float)
-parser.add_argument('--mSize', default=0.15, type = float) # ?????? 0.3
-parser.add_argument('--pSize', default=0.125, type = float) # ???
-parser.add_argument('--aProb', default=0.005, type = float) # ??? MAKE LARGER??????
-parser.add_argument('--aLProb', default=0.05, type = float) # ???
-parser.add_argument('--aCount', default=3, type = int) # ???
-parser.add_argument('--oSize', default=0.002, type = float) # ??? 0.02
-parser.add_argument('--cSize', default=0.1, type = float) # ?????? 0.09 05
-parser.add_argument('--sameRefProb', default=0.5, type = float) # ?????? 0.09 05
-# parser.add_argument('--shard', default="All", type = str) # ???
-parser.add_argument('--equate', default=0.0, type = float) # ?????? 0.09 05
-parser.add_argument('--rephrases', default = 1, type = int) # ???
+parser.add_argument('--mSize', default=0.15, type = float)
+parser.add_argument('--pSize', default=0.125, type = float)
+parser.add_argument('--aProb', default=0.005, type = float)
+parser.add_argument('--aLProb', default=0.05, type = float)
+parser.add_argument('--aCount', default=3, type = int)
+parser.add_argument('--oSize', default=0.002, type = float)
+parser.add_argument('--cSize', default=0.1, type = float) 
+parser.add_argument('--sameRefProb', default=0.5, type = float) 
+
+parser.add_argument('--equate', default=0.0, type = float) 
+parser.add_argument('--rephrases', default = 1, type = int) 
 parser.add_argument('--rephrasesBin', default = 0.25, type = float)
 parser.add_argument('--rephrasesMax', default = 4, type = int)
 parser.add_argument('--tier', default = 0.1, type = float)
@@ -57,13 +57,13 @@ parser.add_argument('--create', action="store_true")
 parser.add_argument('--normalize', action="store_true")
 parser.add_argument('--entailed', action="store_true")
 parser.add_argument('--models', action="store_true")
-parser.add_argument('--questionPrefix', default="final", type = str) # ???
+parser.add_argument('--questionPrefix', default="final", type = str) 
 
 parser.add_argument('--graphstats', action="store_true")
 parser.add_argument('--histo', action="store_true")
 parser.add_argument('--scores', action="store_true")
-parser.add_argument('--scoresFiles', nargs = "*", type = str) # ???
-parser.add_argument('--scoresSuffix', default="", type = str) # ???
+parser.add_argument('--scoresFiles', nargs = "*", type = str) 
+parser.add_argument('--scoresSuffix', default="", type = str) 
 parser.add_argument('--grounding', action="store_true")
 parser.add_argument('--ds', default= "samQuestions", type = str) # default= "samgQuestions"
 
@@ -1107,11 +1107,7 @@ def unbias(gData, inField, outField, ratios): # , outCounter = None , outCounter
             cond = getConditional(instance, question)
             tans = "boolean" if ans in ["yes", "no"] else "open" 
             if cond is None or coin(getDefault(ratios[tans], cond, ans, 1)):
-                #if (question["type"] not in ["verify", "choose", "logical"]):#: or coin(0.85): # 0.67 REMOVED????????
                 instance[outField].append(qid) # [qid] = question # out
-
-                # if outCounter is not None: #  and cond is not None
-                    # outCounter[question["group"]] += 1 # [ans]
 
 def unbiasCat(gData, inField, outField, ratios, toprint = False): # , outCounter = None , outCounter = None
     cdansCounter = defaultdict(lambda: defaultdict(int))
@@ -1389,7 +1385,7 @@ def toNumid(i):
     if i is None:
         return None
     if not i.isnumeric():
-        print("??!?!?!?nonnumeric!?!?!?!?!!" + i)
+        print("nonnumeric: " + i)
     if i == "-":
         return None
     return i
@@ -1652,7 +1648,7 @@ def attrAlts(obj, attribute):
 def getColors(instance):
     return [otherA for otherA in otherObj["attributes"] for otherObj in instance["objects"].values() if typeOf(otherA, otherObj) == "color"]
 
-def candidateAttr(instance, obj, attribute, smoothing = True, likely = True, extraObjs = None, nameof = lambda x: x, getAll = False): # likely = True?????
+def candidateAttr(instance, obj, attribute, smoothing = True, likely = True, extraObjs = None, nameof = lambda x: x, getAll = False):
     if extraObjs is not None:
         if len(extraObjs) == 0:
             return None
@@ -1700,8 +1696,6 @@ def candidateAttr(instance, obj, attribute, smoothing = True, likely = True, ext
         if extraObjs is not None:
             return None
 
-    # if attribute in ["healthy", "unhealthy"]: # ?????????????
-    #     likely = False  
     if obj is not None:
         opAttr = toOp(obj, attribute)
         if opAttr is not None:
@@ -1866,7 +1860,7 @@ def contextScore(instance, o, other):
     sfreqOf = lambda x: math.sqrt(float(counts["o"][x]))
     sfreqSum = sum([sfreqOf(oname) for oname in objNames])
     weightOf = lambda x: 1.0 if sfreqSum == 0 else (sfreqOf(oname) / sfreqSum)
-    contextProbs = [weightOf(oname) * probs["oo1"][oname].get(o, 0) for oname in objNames] # switch order????? oo2?
+    contextProbs = [weightOf(oname) * probs["oo1"][oname].get(o, 0) for oname in objNames] 
     score = avg(contextProbs)
     return score
 
@@ -1879,7 +1873,7 @@ def createAttrsDict(obj):
     return typeToAttrs
 
 def isMainObj(obj):
-    return mainImage(coords(obj)) and not isA(obj, "part") and isWeakExistObj(obj["name"], strong = True) # ??????
+    return mainImage(coords(obj)) and not isA(obj, "part") and isWeakExistObj(obj["name"], strong = True)
 
 def isPronoun(instance, objId):
     obj = instance["objects"][objId]
@@ -1974,7 +1968,7 @@ def wh(obj, where = True, rel = None, subj = None):
     if isA(obj, "animal"):
         return "what animal", "animal"      
     if where:
-        if (isA(obj, "place") or (obj["name"] in extraPlaces)) and wherePlaces: # ????
+        if (isA(obj, "place") or (obj["name"] in extraPlaces)) and wherePlaces: 
             return "where", "place"
         if subj is not None and isAlist(subj, ["animal", "person"]) and isAlist(obj, ["vehicle", "building"]) and wherePlaces:
             return "where", "place"
@@ -2260,7 +2254,7 @@ def undefinedSubjAlt(instance, subj, r, o, cat = None, getAll = False):
         and (not isFamily(s, subj)) and lrCond(s)
 
     likelySubjs = [(s,c) for s,c in tops["or2s"][o].get(r, []) if \
-        (c > 10 and isWeakExistObj(s) and cond(s))][:10] # ??????
+        (c > 10 and isWeakExistObj(s) and cond(s))][:10] 
     leastLikely = likelySubjs[-1][1] if len(likelySubjs) > 0 else 0
     similarSubjs = objAlts(subj)
     similarSubjs = [(s, countOfRel(s, r, o) + (float(leastLikely) / 2)) for s in similarSubjs if cond(s)]
@@ -2271,14 +2265,10 @@ def undefinedSubjAlt(instance, subj, r, o, cat = None, getAll = False):
     if getAll:
         return subjs
 
-    chosen = sample(subjs, smoothing = True) # True/False ????????????????????????????????????????????????????????????????? likelySubjs
-    # chosenB = choice(similarSubjs)
+    chosen = sample(subjs, smoothing = True) 
 
-    # if chosenA is None or chosenB is None:
-    #     return chosenA or chosenB
-    return chosen #chosenA if random.random() < 0.75 else chosenB
+    return chosen
 
-# Add nonexistent or ops!
 def undefinedObjAlt(instance, s, r, obj, cat = None, getAll = False):    
     inObjs = instance["sr"][singularOf(s)][r].keys() # [] # 
     simsObj = objSims(obj)
@@ -2290,7 +2280,7 @@ def undefinedObjAlt(instance, s, r, obj, cat = None, getAll = False):
         and (not isFamily(o, obj)) and lrCond(o)
 
     likelyObjs = [(o,c) for o,c in tops["sr2o"][s].get(r, []) if \
-        (c > 10 and isWeakExistObj(o) and cond(o))][:10] # ??????
+        (c > 10 and isWeakExistObj(o) and cond(o))][:10] 
     leastLikely = likelyObjs[-1][1] if len(likelyObjs) > 0 else 0
     similarObjs = objAlts(obj)
     similarObjs = [(o, countOfRel(s, r, o) + (float(leastLikely) / 2)) for o in similarObjs if cond(o)]
@@ -2303,32 +2293,24 @@ def undefinedObjAlt(instance, s, r, obj, cat = None, getAll = False):
     if getAll:
         return objs # multiSample(choices, num, smoothing = False)
 
-    chosen = sample(objs, smoothing = True) # True/False ???????????????????????????????????????????????????????????????????? likelyObjs chosenA
-    # chosenB = choice(similarObjs)
+    chosen = sample(objs, smoothing = True) 
 
-    # if chosenA is None or chosenB is None:
-    #     return chosenA or chosenB
-    return chosen # chosenA if random.random() < 0.75 else chosenB
+    return chosen 
 
-# TODO: change to weightedChoice
 def indirectRef(instance, objId, short, that, ithat, blackAType, blackObjIds, blackRS, blackRO, simple, cat = None, onlyPrefix = False):
     if cat is not None:
         catC, catN, catIs = cat
-        # catP = (catIs == "are")
-        # catC, catN, catP = cat
 
     sims = []
     for oid in blackObjIds:
         obj = instance["objects"][oid]
-        # objSims =  # ??? wide?????
-        sims += list(objSims(obj["name"])) # ??? wide?????
+        sims += list(objSims(obj["name"])) 
 
     # names = [instance["objects"][oid]["name"] for oid in blackObjIds]
     coordSet = [coords(instance["objects"][oid]) for oid in blackObjIds] 
 
     cond = lambda xid, x: (xid not in blackObjIds) and x["name"] not in sims \
         and not (any([overlapping(coords(x), c) for c in coordSet])) #\
-        # and not (any([isFamily(o["name"], n) for n in names]))
     badIn = lambda rel: rel["rel"] in ["on top of", "on"] \
         and isAlist(instance["objects"][rel["subj"]], ["food", "sauce"]) \
         and isA(instance["objects"][rel["obj"]], "food")
@@ -2344,10 +2326,6 @@ def indirectRef(instance, objId, short, that, ithat, blackAType, blackObjIds, bl
         objLooks = "looks" if catIs == "is" else "look"
 
     refs = []
-    # if simple is None:
-        # simple = (random.random() < 0.2)
-    # objIs = "" if simple else 
-    # synonym for attr or obj??
 
     attrRefs = []
     matRefs = []
@@ -2412,7 +2390,6 @@ def indirectRef(instance, objId, short, that, ithat, blackAType, blackObjIds, bl
 
         c2Ref = choice(c2Refs)
         refs.append((c2Ref, 0.3))    
-        # add unique check?????
 
         outRelRefs = []
         lroutRelRefs = []
@@ -2435,7 +2412,7 @@ def indirectRef(instance, objId, short, that, ithat, blackAType, blackObjIds, bl
             loop = isloop(instance, rel)
 
             if cond(oId, o) and (rel["rel"] != blackRO) and (not similarRel(rel["rel"], blackRO)) \
-                    and isUnique(instance, objId, objName = objCode, prop = "{}_{}".format(rel["rel"], oName)): # (rel["obj"] not in blackObjIds) # ??????
+                    and isUnique(instance, objId, objName = objCode, prop = "{}_{}".format(rel["rel"], oName)):
                 shouldS = shouldBeSimple(rel, s) if cat is None else shouldBeSimpleC(rel, catC)
                 toS = toSimple(rel["rel"], sName) if cat is None else toSimpleP(rel["rel"], personOf(catIs))
                 sIs = isare(sName) if cat is None else catIs #("are" if catP else "is")
@@ -2544,7 +2521,7 @@ def indirectRef(instance, objId, short, that, ithat, blackAType, blackObjIds, bl
                 relInfo = vocab["r"][rel["rel"]]
 
                 if cond(sId, s) and (rel["rel"] != blackRS) and (not similarRel(rel["rel"], blackRS)) \
-                        and isUnique(instance, objId, objName = objCode, prop = "{}_{}".format(sName, rel["rel"])): # ????????????? (rel["subj"] not in blackObjIds)
+                        and isUnique(instance, objId, objName = objCode, prop = "{}_{}".format(sName, rel["rel"])): 
                     if not relInfo.get("notobj", False) and not badIn(rel):
                         relSimple = simple or shouldBeSimple(rel, s)
                         subjIs = "" if relSimple else isare(sName)
@@ -2563,7 +2540,7 @@ def indirectRef(instance, objId, short, that, ithat, blackAType, blackObjIds, bl
                                     the = ""
 
                         code = orelsCode(sId, sCode, rel["rel"], oId, oCode, False)
-                        inRelRef = "the {obj} [that]=0.28 {the}{subj} {sIs} {rel}".format( # ???
+                        inRelRef = "the {obj} [that]=0.28 {the}{subj} {sIs} {rel}".format( 
                             obj = annotate(oName, oId), the = the, subj = annotate(sOut, sId), sIs = subjIs, rel = relName)
 
                         ref = (inRelRef, code)
@@ -2618,12 +2595,11 @@ def indirectRef(instance, objId, short, that, ithat, blackAType, blackObjIds, bl
             # if  pRelRef is not None:
             #     weight = 0.75
             if inRelRef is not None:
-                refs.append(inRelRef) # ((1 if pRelRef is None else 0.75) 0.75
+                refs.append(inRelRef) 
             if lrinRelRef is not None:
                 refs.append(lrinRelRef)
             if pRelRef is not None:
-                refs.append(pRelRef) # , 1 0.75
-            # if "color" not in blackAType: todo???
+                refs.append(pRelRef) 
 
     return sample([(r,c) for r,c in refs if r is not None])
 
@@ -2673,9 +2649,8 @@ def definedRef(instance, objId, direct, short = False, answer = False, that = Fa
     if unique or answer: # or addShort:
         ref["ref"] = ([("{} {}".format(prefix, name), objCode)], stheRef, pronoun) # .append
         ref["the"] = ([(theRef, objCode)], stheRef, pronoun) # .append
-        # ref["this"].append(("{} {}".format(thises(name), name), objCode))
 
-    if "of" in obj and obj["of"] in instance["objects"] and not noSuffix: # TODO: synonyms for that case???
+    if "of" in obj and obj["of"] in instance["objects"] and not noSuffix: 
         otherId = obj["of"]
         other = instance["objects"][otherId]
         otherName = other["name"]
@@ -2718,9 +2693,6 @@ def definedRef(instance, objId, direct, short = False, answer = False, that = Fa
             blackRS = blackRS, blackRO = blackRO, simple = simple, onlyPrefix = onlyPrefix)
 
         if (nonDirectRef is not None):
-            # if addShort:
-            #     ref["ref"][0].append(nonDirectRef)
-            #     ref["the"][0].append(nonDirectRef)            
             if (not unique) or coin(0.5): #  el and (nonDirectRef is not None)
                 ref["ref"] = ([nonDirectRef], stheRef, pronoun)
                 ref["the"] = ([nonDirectRef], stheRef, pronoun)
@@ -2729,7 +2701,6 @@ def definedRef(instance, objId, direct, short = False, answer = False, that = Fa
         if unique and (cat is not None):
             catInfo = catNormalize(obj, cat)
             catInfo = cat, catInfo[0], catInfo[1]
-            # catPlural(cat) if isPlural(obj["name"]) else (cat, cat, False) # ????? catnormalize??????
             catRef = indirectRef(instance, objId, short = short, that = that,
                 ithat = ithat, blackAType = blackAType, blackObjIds = blackObjIds,
                 blackRS = blackRS, blackRO = blackRO, simple = simple, cat = catInfo, onlyPrefix = onlyPrefix)        
@@ -3989,7 +3960,7 @@ if args.create:
                             bp["strongOf"] = True
                 # printGraph(vgData, imageId)
 
-                objs = [oid for oid in instance["objects"] if minSize(instance["objects"][oid])] # ??????
+                objs = [oid for oid in instance["objects"] if minSize(instance["objects"][oid])]
 
                 # templates["directOf"]["extra"][
                 instance["objectSet"] = defaultdict(list)
@@ -4082,9 +4053,6 @@ if args.create:
                     mapping["cWeather"] = cWeather
                     data["candidates"] = [weather, cWeather]
                     gen(instance, "weatherChoose", "chooseState", "chooseState", mapping, data, weatherk, newTf = 0.5)
-                    # if weather is None or cWeather is None:
-                        # print("!!!!!!")
-                        # print(weather, cWeather)
 
                     # weatherVerifyC
                     mapping["inImg"] = inImg()
@@ -4198,7 +4166,6 @@ if args.create:
                     a = geta(objName)
                     sObject, pObject = formsOf(objName)
                     aany = geta(sObject, aany = True)
-                    # objPrintName = random.choise([objName] + getSyms(objName, "o")) ???
 
                     baseMapping = {"object": objName, "sObject": sObject, "pObject": pObject, 
                         "is": objIs, "a": a, "any": aany, "oid": objId, "how": how()}
@@ -4223,7 +4190,7 @@ if args.create:
                         alts = [a for a in alts if isMass(a) == isMass(objName)]
 
                         contextScoreOf = lambda x: math.sqrt(10 * (contextScore(instance, x, objName) + 0.01))
-                        weightedOthers = [(ot, contextScoreOf(ot)) for ot in alts] # prob or count???? nProb[alt].get(attr, 0) 3 * 
+                        weightedOthers = [(ot, contextScoreOf(ot)) for ot in alts]
                         other = sample(weightedOthers)
                         # done = []
                         # for other in alts: # done
@@ -4276,16 +4243,16 @@ if args.create:
                             if otherId != "-":
                                 mapping["inImg"] = inImg()
                                 mapping["a"] = geta(mapping["sObject"])                    
-                                gen(instance, "existAnd", "logicAnd", "existAndT", mapping, data, existk, priority = 2) # , priority = 3 !!!!!!! TODO add back prio!!!! existLogick, 
+                                gen(instance, "existAnd", "logicAnd", "existAndT", mapping, data, existk, priority = 2) 
                             # existAndC
                             elif notexists(instance, other):
                                 mapping["inImg"] = inImg()
                                 mapping["cpsObject"] = mapping["cpObject"] or mapping["csObject"]
-                                gen(instance, "existAndC", "logicAnd", "existAndF", mapping, data, existk, priority = 2) # , priority = 3 !!!!!!! TODO add back prio!!!! existLogick, 
+                                gen(instance, "existAndC", "logicAnd", "existAndF", mapping, data, existk, priority = 2) 
 
                         # done = []
                         for attr in obj["attributes"]:
-                            weightedAlts = [(alt, statOf(alt, attr, p = False)) for alt in alts if isLikely(attr, alt)] # prob or count???? nProb[alt].get(attr, 0)
+                            weightedAlts = [(alt, statOf(alt, attr, p = False)) for alt in alts if isLikely(attr, alt)] 
                             other = sample(weightedAlts)
                             attrType = typeOf(attr, obj)
                             isAj = isAdj(attr)
@@ -4422,21 +4389,15 @@ if args.create:
                                         mapping["cAttribute"] = cattr                        
                                         data = getObjCode(objId, obj, objName, attr = cattr, nt = True)
                                         data["pointer"] = [objId]
-                                        # if "existMaterialNot" not in done:
-                                        gen(instance, "existMaterialNot", "exist", "existNotT", mapping, data, existAttrk, priority = 3) # existk mat1Prio existAttrk
-                                            # done.append("existMaterialNot")
+                                        gen(instance, "existMaterialNot", "exist", "existNotT", mapping, data, existAttrk, priority = 3)
 
                     others = [(o, 1.3) for o in indToObjs[objName]] + [(o, 1) for o in objWeakAlts(objName)]
                     others = [(o, c) for (o, c) in others if notexists(instance, o)]
                     contextScoreOf = lambda x: ((10 * (contextScore(instance, x, objName) ** 0.4) + 0.01))
-                    # mcontextScoreOf = lambda x: math.sqrt(10 * ((0.35 * probs["oo1"][objName].get(x, 0) + 0.65 * contextScore(instance, x, objName)) + 0.01))
-                    weightedOthers = [(ot, contextScoreOf(ot) * c) for (ot, c) in others] # prob or count???? nProb[alt].get(attr, 0) 3 * 
-                    # moreOthers = 
-                    # allOthers
+                    weightedOthers = [(ot, contextScoreOf(ot) * c) for (ot, c) in others] 
                     other = sample(weightedOthers)
 
-                    if other is not None:# len(others) > 0:
-                        # other = choice(others)
+                    if other is not None:
                         sObject, pObject = formsOf(other)
                         psObject = pObject or sObject
 
@@ -4452,12 +4413,8 @@ if args.create:
                         data["pointer"] = ["-"]
                         gen(instance, "existC", "exist", "existF", mapping, data, existk, priority = 0.25, select = 0.4) # existCk
 
-                        # # alts = objAlts(objName)
-                        # for another in alts:
-                        #     if notexists(instance, another) and :
-                        # other = sample(weightedOthers)
-                        others = [o for o in others if singularOf(o) != singularOf(other) and catn(o) == catn(other)] # ?????????????????????
-                        weightedOthers = [(ot, contextScoreOf(ot)) for ot in others] # prob or count???? nProb[alt].get(attr, 0)
+                        others = [o for o in others if singularOf(o) != singularOf(other) and catn(o) == catn(other)] 
+                        weightedOthers = [(ot, contextScoreOf(ot)) for ot in others] 
                         another = sample(weightedOthers)
 
                         if another is not None: # len(others) > 0:
@@ -4515,13 +4472,13 @@ if args.create:
                             if isMain:
                                 data = getObjCode(objId, obj, cat)
                                 data["pointer"] = [objId]
-                                gen(instance, "categoryThis", "queryObject", "queryObject", mapping, data, catk, priority = 2) # (2 if coin(0.3) else 1)
+                                gen(instance, "categoryThis", "queryObject", "queryObject", mapping, data, catk, priority = 2)
 
                             alts = objAlts(objName)
                             alts = [a for a in alts if isAn(a, cat)]
-                            nAlts = [a for a in alts if notexists(instance, a)] # ??????????????????
+                            nAlts = [a for a in alts if notexists(instance, a)] 
                             contextScoreOf = lambda x: math.sqrt(10 * (contextScore(instance, x, objName) + 0.01))
-                            weightedOthers = [(ot, contextScoreOf(ot)) for ot in alts] # prob or count???? nProb[alt].get(attr, 0) 3 * 
+                            weightedOthers = [(ot, contextScoreOf(ot)) for ot in alts] 
                             other = sample(weightedOthers)
                             # other = choice(alts)
                             # for other in alts:
@@ -4582,13 +4539,11 @@ if args.create:
                                 if len(goodOtherss) > 0:
                                     otherId = choice(goodOtherss)
                                 else:
-                                    weightedAlts = [(i, statOf(o["name"], attr, p = False)) for i,o in otherss] # prob or count???? nProb[alt].get(attr, 0)
+                                    weightedAlts = [(i, statOf(o["name"], attr, p = False)) for i,o in otherss] 
                                     otherId = sample(weightedAlts)
 
                                 if otherId is not None:
-                                # for otherId in otherIds:
                                     other = instance["objects"][otherId]
-                                    # if sub(other, cat) and mod(other["name"]) == mod(objName): #  isPlural(other["name"]) == isPlural(objName)
                                     mapping = {"object": objName, "is": isare(objName)}
                                     mapping["catData"] = cat
                                     mapping["inImg"] = inImg()
@@ -4596,7 +4551,6 @@ if args.create:
                                     mapping["category"], mapping["is"] = catNormalize(obj, cat, k = False)
                                     mapping["dobject"], mapping["aobject"], mapping["dpobject"] = definedRef(instance, objId, direct = True, answer = True)["the"]
                                     mapping["cdobject"], mapping["caobject"], mapping["cdpobject"] = definedRef(instance, otherId, direct = True, answer = True)["the"]
-                                    # data["candidates"] = [objName, other["name"]]
 
                                     if isAj:
                                         mapping["prop"] = attr
@@ -4874,10 +4828,7 @@ if args.create:
                                             data = {"dobject": {"code": None}, "attributes": [attr, cattr2], "type": mapping["types"], "pointer": [objId]}
                                             gen(instance, "verifyAttrsC", "verifyAttrs", "verifyAttrsF", mapping, data, attrAndk1)
 
-                            # singularOf(other) in instance["objectSet"]:
-                            # objAlts(other, indicators = False) ##### ALTS or same cat???
                             sameCat = cat2objs[catOf(obj)] 
-                            # done = []
                             for otherId in objs:
                                 otherObj = instance["objects"][otherId]
                                 other = otherObj["name"]
@@ -4885,12 +4836,9 @@ if args.create:
                                 if otherId != objId and other in sameCat and isAttrObj(other) and \
                                     mod(other) == mod(objName) and attr in otherObj["attributes"] and \
                                     isWeakExistObj(other) and isWeakExistObj(objName) and \
-                                    len(otherTypeToAttrs[attrType]) == 1: # isPlural(other) == isPlural(objName)
-                                        #and isUnique(instance, otherId) and isLikely(attr, other): # if isAttrObj(obj) and 
-                                        # ????????????????????? weakly exist???????????????????
+                                    len(otherTypeToAttrs[attrType]) == 1:
 
                                     mapping = copy.deepcopy(baseMapping)
-                                    # DO NOT CHANGE to short without fixing code for that!!!!
                                     mapping["dobject"], mapping["aobject"], mapping["dpobject"] = definedRef(instance, objId, direct = False, short = True, blackAType = [attrType])["the"]
                                     mapping["cdobject"], mapping["caobject"], _ = definedRef(instance, otherId, direct = False, short = True, blackAType = [attrType])["the"]
                                     data = {"parts": []}
@@ -4901,26 +4849,19 @@ if args.create:
                                     dataT.update({"attribute": attr, "type": attrType})
                                     data["parts"].append(codes["verifyAttr"](dataT))
                                     data["pointer"] = [objId, otherId]
-                                    # if attr in other["attributes"]:
                                     if isAj:
-                                        # if "verifyAttrAnd" not in done:
                                         gen(instance, "verifyAttrAnd", "logicAnd", "verifyAttrAndT", mapping, data, attrAndk2) # attrOAndk
-                                            # done.append("verifyAttrAnd")
                                     if attrType == "material":
-                                        # if "verifyMaterialAnd" not in done:
                                         gen(instance, "verifyMaterialAnd", "logicAnd", "verifyAttrAndT", mapping, data, attrAndk2, priority = 3) # matPrio attrOAndk
-                                            # done.append("verifyMaterialAnd")
 
                             pre = None
                             if isUnique(instance, objId):
                                 alts = objAlts(objName)
                                 goodAlts = [alt for alt in alts if notexists(instance, alt) and isLikely(attr, alt)]
-                                weightedAlts = [(alt, statOf(alt, attr, p = False)) for alt in goodAlts] # prob or count???? nProb[alt].get(attr, 0)
+                                weightedAlts = [(alt, statOf(alt, attr, p = False)) for alt in goodAlts] 
                                 other = sample(weightedAlts)
 
                                 if other is not None:
-                                    # for other in alts: # done
-                                    #     if notexists(instance, other) and isLikely(cattr, other):
                                     mapping = copy.deepcopy(baseMapping)
                                     mapping["inImg"] = inImg()
                                     mapping["csObject"], mapping["cpObject"] = formsOf(other)
@@ -4930,9 +4871,6 @@ if args.create:
 
                                     otherId, otherObj = "-", None
                                     mapping["cid"] = None
-                                    # if singularOf(other) in instance["objectSet"]:
-                                    #     otherId = instance["objectSet"][singularOf(other)][0]
-                                    #     otherObj = instance["objects"][otherId]
 
                                     data = {"parts": []}
                                     data["parts"].append(codes["exist"](getObjCode(objId, obj, objName, attr = attr, nt = True)))                            
@@ -4943,13 +4881,13 @@ if args.create:
                                         mapping["prop"] = attr
                                         mapping["cprop"] = "not {attr}".format(attr = attr)
                                         
-                                        gen(instance, "existThatOrC", "logicOr", "existNotOrF", mapping, data, existAttrk) # ,existk  priority = notPrio existLogick
+                                        gen(instance, "existThatOrC", "logicOr", "existNotOrF", mapping, data, existAttrk) 
 
                                     if attrType == "material" and attr in basicMats:
                                         mapping["material"] = True
                                         mapping["prop"] = "made [out]=0.03 of {attr}".format(attr = attr)
                                         mapping["cprop"] = "not made [out]=0.03 of {attr}".format(attr = attr)
-                                        gen(instance, "existThatOrC", "logicOr", "existNotOrF", mapping, data, existAttrk) # existk, priority = matPrio existLogick 
+                                        gen(instance, "existThatOrC", "logicOr", "existNotOrF", mapping, data, existAttrk) 
 
                             # verifyAttr
                             if isAj:                            
@@ -4983,7 +4921,7 @@ if args.create:
 
                             # directOf
                             which = attrType in attrWhich and coin(0.5)
-                            if isAj and isP: #?????? 
+                            if isAj and isP: 
                                 mapping = copy.deepcopy(baseMapping)
                                 mapping["dobject"], mapping["aobject"], mapping["dpobject"] = equate(pre) or definedRef(instance, objId, direct = False, blackAType = [attrType])["ref"]
                                 if attrType in templates["directOf"]["extra"]["synonyms"]:
@@ -5056,7 +4994,7 @@ if args.create:
                             if isAj:
                                 # verifyAttrC                 
                                 mapping = copy.deepcopy(baseMapping)
-                                cattr = candidateAttr(instance, obj, attr) # ????????????????????????????????
+                                cattr = candidateAttr(instance, obj, attr) 
                                 if cattr is not None:
                                     mapping["cAttribute"] = cattr
                                     mapping["dobject"], mapping["aobject"], mapping["dpobject"] = equate(pre) or definedRef(instance, objId, direct = False, short = True, blackAType = [attrType])["ref"]                          
@@ -5077,18 +5015,12 @@ if args.create:
                                         other = instance["objects"][otherId]["name"]
                                         if otherId != objId and other in sameCat and isAttrObj(other) \
                                             and isWeakExistObj(other) and isWeakExistObj(objName) \
-                                            and mod(other) == mod(objName): # isPlural(other) == isPlural(objName)
+                                            and mod(other) == mod(objName): 
                                                 goodAlts.append((otherId, other))
-                                                #and isUnique(instance, otherId): # if isAttrObj(obj) and 
-                                                # ?????????? weakly??????????????????????????????????????????
-                                                 #and isLikely(cattr, other) \
 
                                     cattro = candidateAttr(instance, obj, attr, extraObjs = goodAlts, nameof = lambda x: x[1])
-                                    # weightedAlts = [(otherId, statOf(other, cattr, p = False)) for otherId, other in goodAlts] # prob or count???? nProb[alt].get(attr, 0)
-                                    # otherId = sample(weightedAlts)
                                     if cattro is not None:
                                         cattr, (otherId, other) = cattro
-                                        # print(cattr, other)
                                         mapping = copy.deepcopy(baseMapping)
                                         mapping["dobject"], mapping["aobject"], mapping["dpobject"] = definedRef(instance, objId, direct = False, short = True)["the"]
                                         mapping["cdobject"], mapping["caobject"], _ = definedRef(instance, otherId, direct = False, short = True)["the"]
@@ -5114,12 +5046,8 @@ if args.create:
                                     alts = objAlts(objName)
                                     goodAlts = [alt for alt in alts if notexists(instance, alt)] # and isLikely(cattr, alt)
                                     cattro = candidateAttr(instance, obj, attr, extraObjs = goodAlts)
-                                    # weightedAlts = [(alt, statOf(alt, cattr, p = False)) for alt in goodAlts] # prob or count???? nProb[alt].get(attr, 0)
-                                    # other = sample(weightedAlts)
 
                                     if cattro is not None:
-                                    # for other in alts:
-                                        # if notexists(instance, other) and isLikely(cattrn, other):
                                         cattrn, other = cattro
                                         mapping = copy.deepcopy(baseMapping)
                                         mapping["cAttribute"] = cattrn # candidateAttr(obj, attr)     
@@ -5131,9 +5059,6 @@ if args.create:
 
                                         otherId, otherObj = "-", None
                                         mapping["cid"] = None
-                                        # if singularOf(other) in instance["objectSet"]:
-                                        #     otherId = instance["objectSet"][singularOf(other)][0]
-                                        #     otherObj = instance["objects"][otherId]
 
                                         data = {"parts": []}
                                         data["parts"].append(codes["exist"](getObjCode(objId, obj, objName, attr = cattrn)))
@@ -5178,7 +5103,6 @@ if args.create:
                                     gen(instance, "materialVerifyC", "verifyAttr", "verifyAttrF", mapping, data, attrk, newTf = 0.35)
 
                                 if isUnique(instance, objId):
-                                    # verifyMaterialAndC
                                     sameCat = cat2objs[catOf(obj)] 
                                     
                                     goodAlts = []
@@ -5186,11 +5110,8 @@ if args.create:
                                         other = instance["objects"][otherId]["name"]
                                         if otherId != objId and other in sameCat and isAttrObj(other) \
                                             and mod(other) == mod(objName): # and isLikely(cattr, other): # isPlural(other) == isPlural(objName)
-                                                #and isUnique(instance, otherId): # if isAttrObj(obj) and 
                                                 goodAlts.append((otherId, other))
 
-                                    # weightedAlts = [(otherId, statOf(other, cattr, p = False)) for otherId, other in goodAlts] # prob or count???? nProb[alt].get(attr, 0)
-                                    # otherId = sample(weightedAlts)
                                     cattro = candidateAttr(instance, obj, attr, extraObjs = goodAlts, nameof = lambda x: x[1])
                                     if cattro is not None:
                                         catttr, (otherId, other) = cattro
@@ -5221,12 +5142,8 @@ if args.create:
                                     alts = objAlts(objName)
                                     goodAlts = [alt for alt in alts if notexists(instance, alt)] #  and isLikely(cattr, alt)
                                     cattro = candidateAttr(instance, obj, attr, extraObjs = goodAlts)
-                                    # weightedAlts = [(alt, statOf(alt, cattr, p = False)) for alt in goodAlts] # prob or count???? nProb[alt].get(attr, 0)
-                                    # other = sample(weightedAlts)
-                                    # other = choice(goodAlts)
+
                                     if cattro is not None:
-                                    # for other in alts:
-                                        # if notexists(instance, other) and isLikely(cattrn, other):
                                         cattrn, other = cattro
                                         mapping = copy.deepcopy(baseMapping)
                                         mapping["inImg"] = inImg()
@@ -5240,9 +5157,6 @@ if args.create:
 
                                         otherId, otherObj = "-", None
                                         mapping["cid"] = None
-                                        # if singularOf(other) in instance["objectSet"]:
-                                        #     otherId = instance["objectSet"][singularOf(other)][0]
-                                        #     otherObj = instance["objects"][otherId]
 
                                         data = {"parts": []}
                                         data["parts"].append(codes["exist"](getObjCode(objId, obj, objName, attr = cattrn)))
@@ -5492,7 +5406,7 @@ if args.create:
                                 ref = objRef(oId, oName, rel["rel"], q = False)
                                 mapping["dobject"], mapping["aobject"], mapping["dpobject"] = ref or definedRef(instance, oId, direct = True, answer = True, simple = simple, noSuffix = True, isSubj = False)["the"]
 
-                                mapping["what"], catwh = wh(o, where = True, rel = rel["rel"], subj = s) # False?????
+                                mapping["what"], catwh = wh(o, where = True, rel = rel["rel"], subj = s) 
                                 # mapping["qrel"] = mapping["rel"] 
                                 if rel["rel"] in whereRemove and mapping["what"] == "where":
                                     mapping["qrel"] = " ".join(mapping["qrel"].split(" ")[:-1])
@@ -5517,7 +5431,6 @@ if args.create:
                                 # "sId": sId, "sName": sName, 
                                 gen(instance, "categoryRelO", "queryRel", "queryRel", mapping, data, relck, priority = 3)  
 
-                                # ????
                                 ref = objRef(oId, oName, rel["rel"], q = True)
                                 if isWeakExistObj(oName): # (ref is None)
                                     # the = False
@@ -5552,7 +5465,7 @@ if args.create:
 
                         if isWeakExistObj(sName, strong = True) and \
                                 (((relInfo["cat"] == "direct") and ("s" in relInfo["cases"])) or \
-                                    relInfo["existQuestionOnly"] or rel["rel"] == "at"): # ? unique????
+                                    relInfo["existQuestionOnly"] or rel["rel"] == "at"): 
                             mapping = copy.deepcopy(baseMapping)
                             mapping["sSubject"], mapping["pSubject"] = formsOf(sName)
                             mapping["any"] = geta(mapping["sSubject"], aany = True)
@@ -5584,14 +5497,14 @@ if args.create:
                                 gen(instance, "existRelSC", "existRel", "existRelF", mapping, data, relvk, select = 0.8) # 0.5
 
                         # and isMultiSubj(rel):
-                        if not relInfo["existQuestionOnly"] and not badVerify(instance, rel): # ???????? and isMultiSubj????
+                        if not relInfo["existQuestionOnly"] and not badVerify(instance, rel): 
                             mapping = copy.deepcopy(baseMapping)
                             mapping["dsubject"], mapping["asubject"], mapping["dpsubject"] = definedRef(instance, sId, direct = direct, short = (not direct), onlyPrefix = direct, simple = simple, blackObjIds = ids, blackRO = rel["rel"])["the"] # noSuffix = True, 
 
                             ref = objRef(oId, oName, rel["rel"], q = False) # , q = True
                             dRef = definedRef(instance, oId, direct = False, that = direct, ithat = True, blackObjIds = ids, blackRS = rel["rel"], isSubj = False)["the"] # short = (not direct), ,  that = True
                             # oIsDefined = (ref is None)
-                            if isWeakExistObj(oName) and isSingular(oName) and coin(0.4): # 0.35???? 
+                            if isWeakExistObj(oName) and isSingular(oName) and coin(0.4): 
                                 dRef = [(anRef(oName, oId), getObjCode(oId, o, oName, clean = True))], anRef(oName, oId), (dRef[2] if dRef is not None else None)
                                 # oIsDefined = False
                             mapping["dobject"], mapping["aobject"], mapping["dpobject"] = ref or dRef
@@ -5656,7 +5569,7 @@ if args.create:
 
                                     ref = objRef(oId, oName, rel["rel"], q = False) # , q = True
                                     dRef = definedRef(instance, oId, direct = False, that = direct, ithat = True, blackObjIds = ids, blackRS = rel["rel"], isSubj = False)["the"] # short = (not direct), ,  that = True
-                                    if isWeakExistObj(oName) and isSingular(oName) and coin(0.4): # 0.35???? 
+                                    if isWeakExistObj(oName) and isSingular(oName) and coin(0.4): 
                                         dRef = [(anRef(oName, oId), getObjCode(oId, o, oName, clean = True))], anRef(oName, oId), (dRef[2] if dRef is not None else None)
                                     mapping["dobject"], mapping["aobject"], mapping["dpobject"] = ref or dRef
 
@@ -5856,7 +5769,6 @@ if args.stats or args.normalize:
             instance["eQuestions"] = []
             for qid in instance["rQuestions"]:
                 question = instance["questions"][qid]
-                # if (question["type"] not in ["verify", "choose", "logical"]): # or coin(0.85): # 0.67 REMOVED??????
                 instance["eQuestions"].append(qid)
 
             for qid in instance["eQuestions"]:
@@ -6008,7 +5920,6 @@ if args.normalize: # args.newnorm or args.newnorm or
 
 
 def question2rel(question):
-    # return question["rel"][1] won't work for same material TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if question["ccode"] is None:
         return None
     # nonIds
@@ -6229,14 +6140,11 @@ def getChoices(instance, question):
             if question["group"] in ["categoryRelS", "categoryRelO"]:
                 cat = re.search(r": (.*),", question["code"][-2]).group(1)
 
-            # printGraph({"0": instance}, "0")
-            # print(instance["sr"])
             undefinedAltFunc = undefinedSubjAlt if question["group"].endswith("S") else undefinedObjAlt
             defaultChoices = multiSample(undefinedAltFunc(instance, s["name"], r, o["name"], cat = cat, getAll = True), 10)
         defaultChoices = [question["answer"]] + defaultChoices
         return choices, defaultChoices
 
-    print("????")
     print(question)
 
 def genHit(instances):
