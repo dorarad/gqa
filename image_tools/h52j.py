@@ -1,3 +1,5 @@
+# Translates hdf5 objects to json. Computes spatial relations between objects, and visualize their bboxes
+
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
