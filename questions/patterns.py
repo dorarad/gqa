@@ -1,25 +1,3 @@
-# liquid
-# sport
-# flavor
-# event
-# + mRels, indoors/outdoors # mAttrs # , trivial?
-# + positional / left/right side of the image
-# + more interesting refs
-# + "ref"/"the"
-
-# + rel equivalences (under/above)
-# + a/the/direct freq based for all verbs? probablistic?
-# + ancestor partical credit, child? brother/sisters partical credit if not choose not cat question 
-# "similarity": True, 
-# DONE + definedRef in the img sufix 
-# DONE attr not trivial remove
-# DONE + or/and for attr (are both the apple and the banana red?)
-# DONE do you think
-# DONE do you see
-# TODO go over cats
-
-# bird, tree aircraft bag meal meat sauce label utensil bottle sign road
-
 objCats = {
     "None": ['thing', 'meal', 'drink', 'alive', 'plant', 'building', 'part', 'symbol', 'place', 'env', 'sign', ""],
     'env': ["nature environment", "urban environment", 'vehicle', 'watercraft', 'aircraft'],
