@@ -154,11 +154,56 @@ for p in objCats:
     for c in objCats[p]:
         parent[c] = p
 
+##################### Logging/Files #####################
+
 def writeFile(s):
     pass
-    # print(s)
-    # outQuestions.write(str(s))
-    # outQuestions.write("\n")
+
+def getDefault(dd, k1, k2, default):
+    if k1 in dd:
+        if k2 in dd[k1]:
+            return dd[k1][k2]
+    return default
+
+def writeIdList(l, fname):
+    with open(fname, "w") as f:
+        for e in l: 
+            epath = "vgi/{e}.jpg xml/{e}.xml".format(e = e)
+            f.write("{}\n".format(epath))
+
+def loadFromFile(fname):
+    out = set()
+    with open(fname) as f:
+        l = list(f)
+        for e in l:
+            e = re.search(r"vgi/(.*)\.jpg", e).group(1)
+            out.add(e)
+    return out
+
+def printD(d, title):
+    print(title)
+    print("------------")    
+    for k in sorted(d.keys(), key = lambda c: d[c]):
+        print(k, d[k])
+
+def printDD(dd, title, edd = None):
+    print(title)
+    counter = 0
+    print("------------")    
+    for k1 in dd:
+        print(k1)
+        for k2 in sorted(dd[k1].keys(), key = lambda c: dd[k1][c]):
+            out = dd[k1][k2]
+            if edd is not None:
+                out *= getDefault(edd, k1, k2, 1)
+            counter += out
+            print(k2, out)
+    print(counter)
+
+    with open(counterFile.format(args.questionPrefix, title), "w") as f:
+        json.dump(dd, f)
+
+##################### scene graph preprocessing functions #####################
 
 def addProp(hashTable, objId, name, score):
     if name not in hashTable:
@@ -214,6 +259,8 @@ def hashObjs(instance, hashTable, objDict):
                 addObj(instance, hashTable, objId, pred[0], pred[1], obj)
 
     return hashTable
+
+##################### Semantic predicates #####################
 
 def typeOf(a, o, retAll = False):
     if o is not None and a in o["senses"]:
@@ -422,6 +469,8 @@ def replace(old, new):
         return parentOf(old, new)
     return counts["o"][new] > counts["o"][old]
 
+##################### spatial relations compuation #####################
+
 def coords(o):
     return (o["x0"], o["y0"], o["x1"], o["y1"])
 
@@ -627,6 +676,8 @@ def vis(imageId):
     plt.savefig("photos/"+imageId+"Data.jpg", dpi = 720) # +"_"+str(j)
     plt.close(fig)
 
+##################### Preprocess scene graph #####################
+
 # trivial = [] # if it's a question
 parents2objs = defaultdict(set)
 cat2objs = defaultdict(set)
@@ -689,6 +740,8 @@ for obj in vocab["o"]:
             indToObjs[ind].add(obj)
 
 weakExistanceObjs = [obj for obj in vocab["o"] if isWeakExistObj(obj, strong = True)]
+
+##################### Textual probablistic predicates #####################
 
 def objWeakAlts(obj):
     sims = objSims(obj, wide = True)
@@ -765,6 +818,8 @@ oType2weight = {
 }
 
 tfProb = 0.32 # 0.5 # 5 0.35
+
+##################### Question Sub-Sampling and De-Duplication #####################
 
 def weightedChoice(choices, weights, priority = False):
     if weights is None:
@@ -854,80 +909,16 @@ def dedupQuestions(instance):
     for ccode in instance["ccode2qids"]:
         instance["ccode2qids"][ccode] = [qid for qid in instance["ccode2qids"][ccode] if qid in instance["questions"]]
 
-def getDefault(dd, k1, k2, default):
-    if k1 in dd:
-        if k2 in dd[k1]:
-            return dd[k1][k2]
-    return default
-
-def writeIdList(l, fname):
-    with open(fname, "w") as f:
-        for e in l: 
-            epath = "vgi/{e}.jpg xml/{e}.xml".format(e = e)
-            f.write("{}\n".format(epath))
-
-def loadFromFile(fname):
-    out = set()
-    with open(fname) as f:
-        l = list(f)
-        for e in l:
-            e = re.search(r"vgi/(.*)\.jpg", e).group(1)
-            out.add(e)
-    return out
-
-def printD(d, title):
-    print(title)
-    print("------------")    
-    for k in sorted(d.keys(), key = lambda c: d[c]):
-        print(k, d[k])
-
-def printDD(dd, title, edd = None):
-    print(title)
-    counter = 0
-    print("------------")    
-    for k1 in dd:
-        print(k1)
-        for k2 in sorted(dd[k1].keys(), key = lambda c: dd[k1][c]):
-            out = dd[k1][k2]
-            if edd is not None:
-                out *= getDefault(edd, k1, k2, 1)
-            counter += out
-            print(k2, out)
-    print(counter)
-
-    with open(counterFile.format(args.questionPrefix, title), "w") as f:
-        json.dump(dd, f)
-
-def downsampleQuestions(gData, inField, outField, gProb): # , typeDict = None, toPrint = False
-    # typeCounterU = defaultdict(int)
-    # groupCounterU = defaultdict(int)
+def downsampleQuestions(gData, inField, outField, gProb): 
     for imageId in gData: 
         instance = gData[imageId]
         instance[outField] = [] # {}
-        # print(len(instance["rQuestions"]))
         for qid in instance[inField]: # , question .items()
             question = instance["questions"][qid]
-            # print("D2", question["key"], question["question"], question["fullAnswer"], question["answer"], "->".join(question["code"]))
             if (question["group"] not in gProb) or coin(gProb[question["group"]]):
                 instance[outField].append(qid) # [qid] = question # out
-                # if typeDict is not None:
-                    # typeDict[question["type"]] += 1
-                # groupCounterU[question["group"]] += 1
-    # if toPrint:
-    #     print(outField)
-    #     print("------------")
-    #     print(typeCounterU)
-    #     for c in sorted(groupCounterU.keys()):
-    #         print(c, groupCounterU[c])
-# customSmoother(counts, b = 2, gamma = 1.3)
-# typeSamples = {
-#     "verify": 0.75, 
-#     "choose": 0.865, 
-#     "logical": 0.95
-# }
 
 def typesampleQuestions(gData, inField, outField, typeDict):
-
     newAll = float(typeDict["query"]) / 0.57
     newVerify = newAll * 0.18 * 1.4
     newChoose = newAll * 0.095 * 1.4
@@ -1174,12 +1165,7 @@ def subuniqueQuestions(instance, qids, num = None, weak = False): # instance,
             if num is not None and len(out) == num:
                 break
     
-    # print([q["entailedQuestions"] for q in out.values()])
     return out.keys()
-
-    # entailed.add(q["id"])
-    # for e in q["entailedQuestions"]:
-    #     entailed.add(e)
 
 def selectEntailedQuestions(instance, qids, num):
     entailed = {}# set()
@@ -1247,11 +1233,12 @@ def sample(choices, smoothing = False, index = False):
                 return choice, i 
             return choice
 
-    print("STRANGE!")
     return choice([c for c, w in choices])
 
+##################### Sampling predicates #####################
+
 def multiSample(choices, num, smoothing = False):
-    nchoices = [c for c in choices] # copy.deepcopy(choices)
+    nchoices = [c for c in choices]
     chosens = []
     for _ in range(num):
         chosen = sample(nchoices, smoothing)
@@ -1282,7 +1269,7 @@ def choiceSelect(choices, only = False):
     allChoices = [c for c,b in choices]
     goodChoices = [c for c,b in choices if b]
     badChoices = [c for c,b in choices if not b]
-    if only: #  or random.random() < 0.5
+    if only:
         return choice(goodChoices)
     return choice(allChoices)
 
@@ -1304,6 +1291,9 @@ def getAnnotations(s):
         newParts.append(p)
     newS = " ".join(parts)
     return annotations, newS
+
+##################### Generating Questions! #####################
+##### Translate a question structured represenation to text #####
 
 def generateQuestion(patterns, mapping, group, data, nonProb):
     questions = []
@@ -1490,12 +1480,7 @@ def normalizeString(s, question = False, cap = True, nonProb = False):
         s = s.replace("what type ", "which type ")
     if nonProb and coin(0.5):
         s = s.replace("what kind ", "which kind ")
-    # if random.random() < 0.75:
-    #     if s.startswith("what place"):
-    #         s = s.replace("what place", "where", 1)
-    # if random.random() < 0.75:
-    #     if s.startswith("which place"):
-    #         s = s.replace("which place", "where", 1)
+
     if nonProb and coin(0.5):
         s = s.replace("what kind ", "which kind ")
 
@@ -1536,11 +1521,6 @@ def normalizeString(s, question = False, cap = True, nonProb = False):
 
     s = " ".join([toCaps.get(w, w) for w in s.split(" ") if w != ""])
     s = s.replace(" ,", ",")
-    # if random.random() < 0.2:
-    #     slist = s.split(" ")
-    #     if slist[-1] in ["at", "on", "in"] and slist[0] != "where":
-    #         slist = [slist[-1]] + slist[:-1] 
-    #     s = " ".join(slist)
 
     if cap:
         s = s[0].upper() + s[1:]
@@ -1587,9 +1567,6 @@ def isAttrObj(obj):
     isException = vocab["o"][obj]["exception"]
     return isMain or isException
 
-    # isException = vocab["o"][oname]["exception"]
-    # return isMain or isException
-
 def toOp(obj, attr):
     if (attr, obj["name"]) in exceptAttrs:
         return None
@@ -1617,7 +1594,6 @@ def attrNotTrivial(attr, obj):
     return (len(attrs) > 0) or toOp(obj, attr)
 
 def isLikely(attr, obj):
-    # nProb check?
     return statOf(obj, attr, p = True) > args.aProb and statOf(obj, attr, p = False) > args.aCount 
 
 def attrSims(attribute):
@@ -1631,17 +1607,15 @@ def attrSims(attribute):
         simAttsR = attrSimGroups[key]
         for a in simAttsR:
             simAtts.add(a)
-    # if attribute in simAtts:
-    #     simAtts.remove(attribute)
     return simAtts       
 
 def attrAlts(obj, attribute):
-    t = typeOf(attribute, obj) #vocab["a"][a]["cat"]
+    t = typeOf(attribute, obj) 
     if t is not None:
         good = typeGroups[t]
         good = [a for a in good if isAdj(a) == isAdj(attribute)]
         bad = attrSims(attribute)
-        ret = [a for a in good if (a not in bad)] #  and a != attribute
+        ret = [a for a in good if (a not in bad)] 
         return ret
     return []
 
@@ -1656,11 +1630,9 @@ def candidateAttr(instance, obj, attribute, smoothing = True, likely = True, ext
     countOf = lambda o, a: statOf(o, a, p = False)
     probOf = lambda o, a: nProb[o].get(a, 0) # [t] , t
 
-    # countLOf = lambda olist, a: max([(o, countOf(o, a)) for o in olist], key = lambda x: x[1])
     probLOf = lambda olist, a: max([(o, probOf(nameof(o), a)) for o in olist], key = lambda x: x[1]) # , t
     
     alts = attrAlts(obj, attribute)
-    # attrType = typeOf(attr, obj)
 
     if obj is not None:
         alts = [a for a in alts if a not in obj["attributes"]]
@@ -1682,12 +1654,10 @@ def candidateAttr(instance, obj, attribute, smoothing = True, likely = True, ext
                 candObjs = [ea for ea in extraObjs if countOf(ea, a) > args.aCount]
                 if len(candObjs) > 0:
                     o, p = probLOf(candObjs, a) # , attrType extraObjs extraObjs
-                    # print(o, p, a, c)
                     if p > args.aProb:
                         likelyAltsNew.append(((a, o), c * p))
 
             likelyAlts = likelyAltsNew
-            # likelyAlts = [(a, c * countOf(extraObj, a)) for a, c in likelyAlts if probOf(obj, a, attrType) > args.aProb]
 
         if len(likelyAlts) > 0:
             if getAll:
@@ -1822,29 +1792,6 @@ def notexists(instance, objname):
         return False
     return not(singularOf(objname) in instance["name2obj"])
 
-# def similarRel(rel1, rel2):
-#     relList1 = rel1.split(" ")
-#     relList2 = rel2.split(" ")
-#     intersection = [w for w in relList1 if w in relList2]
-#     return len(intersection) > 0
-
-# edible 
-# ref = {
-#     "text": ""
-#     "prob": num
-#     "constraints": {
-#         objId: [
-#             "attributes": ["attr",...],
-#             "pos": ["pos",...]
-#             "rels": [relId,...],
-#             "same": [("type", objId) ],
-#             "name": bool
-#         ]
-#     }
-# }
-
-# add rel if not needed?
-# 2 refs
 def avg(l):
     if len(l) == 0:
         return 0
@@ -1937,13 +1884,6 @@ def getaIn(objName, aany = False, attr = None, first = True, firstAny = None): #
     if isMass(objName):
         return cany(first) if aany else "" # , firstAny
     return ""
-
-# prefixes = [aPrefix(objName)]
-# if aany:
-#     prefixes.append(cany(first, firstAny))
-# return random.choice(prefixes) # + " "
-# "any" if first or firstAny != "any" else ""
-#return # "any" if aany and (first or firstAny != "any") else "" # " "
 
 def lastWord(n):
     return n.split(" ")[-1]
@@ -2296,6 +2236,8 @@ def undefinedObjAlt(instance, s, r, obj, cat = None, getAll = False):
     chosen = sample(objs, smoothing = True) 
 
     return chosen 
+
+##################### Recursive object referencing #####################
 
 def indirectRef(instance, objId, short, that, ithat, blackAType, blackObjIds, blackRS, blackRO, simple, cat = None, onlyPrefix = False):
     if cat is not None:
@@ -2797,6 +2739,8 @@ def binaryOp(parts, op):
     ret.append("{op}: {s1}+{s2}".format(op = op, s1 = len(parts[0]) - 1, s2 = len(ret) - 1))
     return ret
 
+##################### Structured Question Representation #####################
+
 codes = {
     "verifyState": lambda data: ["select: scene"] + ["verify {}: {}".format(data["type"], data["attribute"])],
     "queryState": lambda data: ["select: scene"] + ["query: {}".format(data["type"])],
@@ -2994,7 +2938,8 @@ def compactCodeFix(ccode, code, answer, codeGroup, group):
     ccode = "/".join([right] + ccode.split("/")[1:])
     return ccode
 
-# entailed = set()
+#####################  Question Entailment Logic #####################
+
 def entailed(ccode, codeGroup, es = None):
     if es is None:
         es = []       
@@ -3391,6 +3336,8 @@ def directEntailed(ccode, codeGroup):
 idCounter = 0
 pidCounter = 0
 
+##################### End of Question Entailment Logic #####################
+
 def adjForm(attr):
     if attr in vocab["a"]:
         return vocab["a"][attr]["adjForm"]
@@ -3415,6 +3362,8 @@ def animalKey(animal):
     if animalType == "animal":
         return None
     return animalType
+
+##################### Creating special question types #####################
 
 def createComparative(instance, subjId, subjName, objId, objName, comparative, qk):
     # ids = [subjId, objId]
@@ -3547,14 +3496,11 @@ def createSmdiffQ(instance, type2obj, c1, c2, ctype, qk):
 
 flavorAnsPattern = "{this} {is} a {attribute} {object}."
 def getPatterns(group, mapping):
-    # if group == "verifyAttr":
     patterns = []
     for p in templates[group]["list"]:
         if len(p) == 4:
             patterns.append(p)
         else:
-            # if group in ["verifyAttr", "verifyAttrC", "verifyAttrs", "verifyAttrs", 
-            #     "directOf", "directWhich", "how"]:
             bad = False
             if p[4] in ["have", "typed", "of", "pattern", "direct"]:
                 condKey = p[4]
@@ -3585,11 +3531,6 @@ def getPatterns(group, mapping):
             elif p[4] == "countable":
                 if not mapping["category"] is not None:
                     bad = True # *patterns.append(p)
-            # elif p[4] == "leftright":
-            #     if mapping["pos"] not in ["left", "right"]:
-            #         bad = True
-            # elif p[4] == "where":
-            #     if 
 
             if p[-1] == "short":
                 if not (mapping["dobject"] == mapping["aobject"]):
@@ -3600,19 +3541,15 @@ def getPatterns(group, mapping):
                 
             if not bad:
                 patterns.append(p)
-            # elif p[4] == "both":
-            #     if all(mapping[p] is not None for p in ["object", "cObject"]):
-            #         patterns.append(p)
-            #     else:
-            #         patterns.append(p)
-            # else:
-            #     patterns.append(p)
 
     patterns = [(p[:3], p[3]) for p in patterns]
     return patterns
 
 def isTf(questionAns):
     return questionAns in ["yes", "no"]
+
+
+##################### Traverse the graph and create question structured representations #####################
 
 def genQuestionRep(instance, patterns, group, codeSturcture, codeGroup, mapping, data, key, 
         priority, select = 1.0, ansDist = False, newTf = None, nonProb = False, weights = None):
@@ -3663,19 +3600,15 @@ def genQuestionRep(instance, patterns, group, codeSturcture, codeGroup, mapping,
         if question["ccode"] is not None:
             instance["ccode2qids"][question["ccode"]].append(str(idCounter))
 
-        # print(question)
-        # writeFile(question)
-        # print(question)
-        # print("O", question["key"], question["question"], question["fullAnswer"], question["answer"], "->".join(question["code"]))
         idCounter += 1
 
     pidCounter += 1
 
 def gen(instance, group, codeSturcture, codeGroup, mapping, data, key, priority = 1, select = 1.0, 
-        newTf = None, weights = None): # , weight
-    dobjects = mapping.get("dobject", [None]) #  and "{dobject}" in :
+        newTf = None, weights = None): 
+    dobjects = mapping.get("dobject", [None]) 
     cdobjects = mapping.get("cdobject", [None])
-    dsubjects = mapping.get("dsubject", [None]) #  and "{dobject}" in :
+    dsubjects = mapping.get("dsubject", [None]) 
     cdsubjects = mapping.get("cdsubject", [None])
     
     if "object" in mapping:
@@ -3690,9 +3623,6 @@ def gen(instance, group, codeSturcture, codeGroup, mapping, data, key, priority 
 
                     genMapping = copy.deepcopy(mapping)
                     genData = copy.deepcopy(data)
-
-                    # if "type" in genData and unicode(genData["type"]).isnumeric(): # , 'utf-8'
-                    #     genData["type"] = None
 
                     if dobject is not None:
                         genMapping["dobject"] = dobject[0]
@@ -3801,16 +3731,6 @@ def printGraph(gdata, imageId):
 with open(dataFilename.format("Keys")) as f:
    vgKeys = json.load(f)
    vgKeys = [k for k in vgKeys]
-   # vgData = json.load(f)
-   # vgData.update(json.load(f))
-
-# trainPercent = 1 - (3 * args.tier)
-# trainMax = int(trainPercent * len(vgKeys))
-# valMax = trainMax + (args.tier * len(vgKeys))
-# testMax = valMax + (args.tier * len(vgKeys))
-# ttestMax = len(vgKeys)
-# trainPercent = 1 - (3 * args.tier)
-# trainMax = int(float(1)/3 * len(vgKeys))
 
 trainkeys = loadFromFile("trainkeys.txt")
 valkeys = [k for k in vgKeys if k not in trainkeys]
@@ -3832,10 +3752,6 @@ for k in trainkeys:
     key2tier[k] = "train"
 for i, k in enumerate(valkeys):
     key2tier[k] = tierOf(i)
-
-# trainKeys = []
-#     # if key2tier[k] == "train":
-#     #     trainKeys.append(k)
 
 sk = multichoice(trainkeys, 37500)
 ssk = multichoice(sk, 7500)
@@ -3860,9 +3776,13 @@ def getKey():
 
 redo = []
 
+############# Main: Question Generation, connect all functions together ##############
+##### traverse the graph, go over each question type, create question structured #####
+##### representations and then translate each structured represenation into      #####
+##### textual form.                                                              #####
+######################################################################################
+
 if args.create:
-    # keylist = list(vgData.keys()) #["2365465"]
-    # random.shuffle(keylist)
     #### questions
     typeCounter = defaultdict(int)
     groupCounter = defaultdict(int)
@@ -3893,7 +3813,6 @@ if args.create:
 
             resetKey()
 
-            # if True:
             try:
                 for objId in instance["objects"]:
                     obj = instance["objects"][objId]
@@ -3958,7 +3877,6 @@ if args.create:
                         if contain[1] > args.iSize:
                             bp["of"] = contain[0]
                             bp["strongOf"] = True
-                # printGraph(vgData, imageId)
 
                 objs = [oid for oid in instance["objects"] if minSize(instance["objects"][oid])]
 
@@ -4704,17 +4622,6 @@ if args.create:
                             mrelok = seed + "_2"
                             mrelvk = seed + "_3"
                             if mrel != "casting":
-                            # relName = srelName = mrel
-                            # ois = qis = isare(objName)
-                            # sIs = "is"
-                            # if shouldBeSimple(mrel, obj):
-                            #     relName = toSimple(mrel, obj["name"])
-                            #     srelName = toSimpleP(mrel, "is")
-                            #     ois = sIs = ""
-                            #     subjQis = dodoes(sName)
-                            # qattr = "{r} {a}".format(r = srelName, a = obj["mRels"][mrel])
-                            # , "srel": mrel
-
                                 ois = isare(objName)
                                 attr = "{r} {a}".format(r = mrel, a = obj["mRels"][mrel])
                                 mapping = {"is": ois, "sis": "is", "qis": ois, "object": objName, 
@@ -5594,15 +5501,11 @@ if args.create:
             for key in instance["key2qids"]:
                 qs = [instance["questions"][q] for q in instance["key2qids"][key]]
                 chosens = sampleUniqueQuestions(qs)
-                # print(key)
                 for chosen in chosens:
-                    # if chosen["type"] in ["verify", "choose", "logical"]: # u'verify': 788630, u'compare': 52333, u'choose': 332612, u'logical': 257803, u'query': 1454187})
-                    #     chosen["select"] *= 0.67
                     if chosen["select"] == 1.0 or coin(chosen["select"]):
                         instance["rQuestions"][chosen["id"]] = chosen
 
             instance["sQuestions"] = {qid: q for qid, q in instance["questions"].items() if q["ansDist"]}
-            # print(len(instance["sQuestions"]))
             for qid, question in instance["sQuestions"].items():
                 question["question"] = question["question"].replace("type of", "kind of")
                 instance["rQuestions"][qid] = question
@@ -5749,8 +5652,6 @@ def getConditional(instance, question):
 
     print(question)
     raise Exception("missing conditional")
-    # print("##########")
-    # print(question) 
 
 if args.stats or args.normalize:
     typeCounter = defaultdict(int)
@@ -5853,6 +5754,9 @@ if args.stats or args.normalize:
     printDD(ocondAnswerCounter, "afterLocalO", ratios["open"]) # 1
     printDD(bcondAnswerCounter, "afterLocalB", ratios["boolean"]) # 1
 
+################# Main: Question Subsampling: connect all functions together ##################
+###############################################################################################
+
 if args.normalize: # args.newnorm or args.newnorm or 
     print("normalize")
 
@@ -5918,6 +5822,9 @@ if args.normalize: # args.newnorm or args.newnorm or
 
     print(redo)
 
+################# Main: Clean up the internal question structured representation into #########
+################# its clean functional code.                                          ########
+###############################################################################################
 
 def question2rel(question):
     if question["ccode"] is None:
@@ -6147,6 +6054,8 @@ def getChoices(instance, question):
 
     print(question)
 
+################# Extra: code for mturk experiments #################
+
 def genHit(instances):
     contents = []
     for i in range(0, len(instances), 2):
@@ -6209,6 +6118,8 @@ if args.makeMturk:
         with open(mturkFilename.format(setIndex), "w") as f:
             json.dump(hits, f)        
 
+################# Organize the dataset into splits (tain/val/test, etc.) #################
+
 if args.models:
     imgIds1 = json.load(open("../gqa/vg_spatial_imgsInfo.json"))
     imgIds2 = json.load(open("../gqa/vg_gt_imgsInfo.json"))
@@ -6265,8 +6176,8 @@ if args.models:
             with open(outFormat.format(prefix = args.questionPrefix, ds = ds, tier = tier), "w") as f:
                 json.dump(data[ds][tier], f)
 
-    # writeIdList(keys, "all.txt")
-    # writeIdList(trainKeys, "train.txt")    
+################# Print various statistics of the scene graphs / questions #################
+
 if args.graphstats:
     graphStats = {"objs": [], "attrs": [], "allrels": [], "rels": [],
         "objsDict": defaultdict(int), "attrsDict": defaultdict(int),
