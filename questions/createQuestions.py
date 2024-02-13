@@ -11,52 +11,11 @@ import en
 import copy
 import re
 import numpy as np
-# import json
-# import pickle 
-# from tqdm import tqdm
-# from matplotlib.patches import Rectangle
-# from visual_genome import api as vg
-# from PIL import Image as PIL_Image
-# import requests
-# import io
-# import copy
-# from models import Image, Object, Attribute, Relationship
-# from models import Region, Graph, QA, QAObject, Synset
-
-# import utils
-# from nltk.corpus import wordnet as wn
-# from progress.bar import Bar
-# from nltk.corpus import wordnet_ic
-# brown_ic = wordnet_ic.ic('ic-brown.dat')
-# import os
-# from nltk.stem import WordNetLemmatizer
-#metadata_annotationsNew.json
-# import utils 
-# wnl = WordNetLemmatizer()
-# import phrasefinder as pf
-
-#pf.search(pf.Corpus.AMERICAN_ENGLISH, "that is followed by").phrases[0].match_count
 
 parser = argparse.ArgumentParser()
-# parser.add_argument('--dir', default="vg14", type = str)
-# parser.add_argument('--inDir', required=True, type = str)
-# parser.add_argument('--tier', required=True)
-# parser.add_argument('--outputName', default = "metadata", type = str)
-# parser.add_argument('--interThr', default=0.55, type = float)
-# parser.add_argument('--interThrRelaxed', default=0.3, type = float)
-# parser.add_argument('--sizeThr', default=1.5, type = float)
-# parser.add_argument('--bigSizeThr', default=2.5, type = float)
-# parser.add_argument('--margin', default=0.15, type = float)
-# parser.add_argument('--hside', default=0.3, type = float)
-# parser.add_argument('--vside', default=0.18, type = float)
-# parser.add_argument('--distance', default=0.25, type = float)
-# parser.add_argument('--mo', default=0.15, type = float)
-# parser.add_argument('--mi', default=0.35, type = float)
-# parser.add_argument('--isize', default=0.9, type = float)
-# parser.add_argument('--normal', default=0.05, type = float)
+
 parser.add_argument('--vis', action="store_true")
-# parser.add_argument('--stats', default=500, type = int)
-# parser.add_argument('--overlapSThr', default=0.85, type = float)
+
 parser.add_argument('--overlapThr', default=0.7, type = float)
 parser.add_argument('--interThr', default=0.55, type = float)
 parser.add_argument('--interThrRelaxed', default=0.3, type = float)
@@ -66,7 +25,6 @@ parser.add_argument('--margin', default=0.15, type = float)
 parser.add_argument('--hside', default=0.3, type = float)
 parser.add_argument('--vside', default=0.18, type = float)
 parser.add_argument('--distance', default=0.25, type = float)
-# parser.add_argument('--distanceRelaxed', default=0.7, type = float)
 parser.add_argument('--mo', default=0.15, type = float)
 parser.add_argument('--mi', default=0.35, type = float)
 parser.add_argument('--iSize', default=0.75, type = float)
@@ -94,20 +52,6 @@ parser.add_argument('--uniform', action="store_true")
 parser.add_argument('--debug', action="store_true")
 parser.add_argument('--gsmoothPrms', default = "", type = str)
 parser.add_argument('--lsmoothPrms', default = "", type = str)
-# parser.add_argument('--newnorm', action="store_true")
-# parser.add_argument('--fix', action="store_true")
-# parser.add_argument('--stats', action="store_true")
-# parser.add_argument('--subsets', action="store_true")
-
-# parser.add_argument('--cont', action = "store_true")
-# parser.add_argument('--features', action = "store_true")
-# parser.add_argument('--maxObjectNum', default = 100, type = int)
-# parser.add_argument('--featuresDim', default = 2048, type = int)
-# parser.add_argument('--inEnd', default = [""], nargs = "*")
-
-# parser.add_argument('--imagesNum', default = _, type = int)
-
-# ------------------------------------------------------------
 
 parser.add_argument('--create', action="store_true")
 parser.add_argument('--normalize', action="store_true")
@@ -145,59 +89,18 @@ counterFile = "finaliter2/v{}counter{}.json"
 mturkFilename = "hits/hits{}.json"
 
 shardsNum = 1 if args.debug else 20
-# height: int, 'width': int, 'coco': id / None
-# objects: obj Dict with ones from objList
-# uobjects: obj Dict with all objs
-# predObjects: obj Dict with predictions
-# posRels: rel list. rel: {rel: left/right, obj: id, subj: id}, 
-# name2obj: dict: name, list: [(id, score)]
-# # refs
-
-# Object:
-# key: objId, structure:
-# name: str, preds: [(name, score)]
-# attributes: str list, predAttributes: [(name, score)]
-# outRels / inRels: rels dict
-# rel: {rel: name, obj: id, subj: id}
-# pos: list: left, right, top, bottom, middle
-# posRels: relId list
-# rx0 ry0 rx1 ry1 rw rh
-# x0 y0 x1 y1 xc yc w h
-# size
-# of <-- verify
-
-###
 
 x2imageFiles = { # x - > [imgIds...]
     "o": "vg14/oImg.json",
     "oo": "vg14/ooImg.json",
     "oor": "vg14/oorImg.json",
     "oon": "vg14/oonImg.json",
-    # "oO": "vg14/oOImg.json", # TODO: filter with predObjects
-    # "ooR": "vg14/ooRImg.json",
-    # "ooN": "vg14/ooNImg.json",
     "O": "simImg.json"    
 }
 
 topFiles = { # x -> [(y,n),...]
-    # "o2a": "vg14/oaList.json",  # GOOD, but bug..
-    # "o1": "vg14/info_o1List.json", # GOOD
-    # "o2": "vg14/info_o2List.json", # GOOD
     "sr2o": "vg14/info_sroList.json",
     "or2s": "vg14/info_orsList.json",
-    # "so2r": "vg14/info_sorList.json", # GOOD
- #    "o2so": "o2_inters.json", # GOOD
- #    "ops": "vg14/opsList.json", # GOOD # (s,r,o), (sroDict[s][r][o] * sroDict[o][r][s], sroDict[s][r][o], orsDict[s][r][o]) 
- #    "ormulti": "vg14/srmultiList.json", # GOOD
- #    "srmulti": "vg14/ormultiList.json", # GOOD
- #    "srmulti": "vg14/ormultiList.json", # GOOD
- #    "ormulti": "vg14/ormultiList.json",  # GOOD   
- #    "oo": "vg14/topOO.json", # GOOD
- #    "coo": "vg14/topCOO.json", # GOOD
- #    "oo_Rr": "vg14/ooTFList.json", # GOOD
- #    "oo_rr": "vg14/oorrList.json", # GOOD
- #    "sor": "vg14/topSORList.json", # GOOD
- #    "oon": "vg14/topOonList.json", # GOOD
 }
 
 vocabFiles = {
@@ -206,72 +109,10 @@ vocabFiles = {
     "r": "vg14/cRelsNV.json"
 }
 
-# o
-# "school bus": {
-#     #"count": "45",
-#     *"main": true,
-#     *"cat": "vehicle"
-# },
-
-# r
-# "across from": {
-#     ?"cat": "spatial",
-#     #"subcat": null,
-#     #"simcat": null,
-#     *"syms": [],
-#     #"count": "179",
-#     passive: None
-#     stative: False
-#     *"cases": [
-#         "s",
-#         "o"
-#     ]
-#     place
-#     spatial
-# },
-
-# a 
-# "rainbow colored": {
-#     *"cat": "24",
-#     #"subcat": null,
-#     *"simcat": "colorful",
-#     *"sims": [], <-- can't use sims for comparison or false candidates
-#     *"syms": [
-#         "rainbow-colored"
-#     ],
-#     *"adjForm": "rainbow colored", <-- adj form for questions
-#     *"isAdj": true, <-- has to use adj form
-#     #"count": "215",
-#     #"named": false
-# },
-
 catsFiles = {
-    "o": "vg14/cObjsCatsNV.json",
-    "a": "vg14/cAttrsCatsNV.json",
+    "o": "vg14/objects.json",
+    "a": "vg14/attributes.json",
 }
-
-# a keys: "", number, named
-# "shape": [
-#     "round",
-#     "square",
-#     "rectangular",
-#     "triangular",
-#     "octagonal"
-# ],
-
-# o keys: main, extra:
-# "object": [
-#     "floor tile",
-#     "traffic sign",
-#     "tank",
-#     "pack",
-#     "toilet tank",
-#     "blocks",
-#     "pole",
-#     "antenna"
-# ],
-
-# TODO: get all words of some cat
 
 countFiles = {
     "o": "vg14/info_oCount.json",
@@ -285,8 +126,7 @@ countFiles = {
 
 probFiles = {
     "oa": "vg14/info_oaProb.json",
-    "oo2": "vg14/info_ooProb.json" # GOOD
-    #"sro": "vg14/sroCount.json"
+    "oo2": "vg14/info_ooProb.json"
 }
 
 freqFiles = {
@@ -295,9 +135,6 @@ freqFiles = {
     "ro": "roFreqs.json"
 }
 
-# outQuestions = open("questions/out_questions{}.txt".format(args.shard), "w")
-# x2image = loadDicts(x2imageFiles)
-# catInfo = loadDicts(catsFiles)
 tops = loadDicts(topFiles)
 vocab = loadDicts(vocabFiles)
 freqs = loadDicts(freqFiles)
@@ -584,54 +421,6 @@ def replace(old, new):
     if isFamily(old, new):
         return parentOf(old, new)
     return counts["o"][new] > counts["o"][old]
-    # return vocab["o"][new]["count"] > vocab["o"][old]["count"]
-
-# # GOOD
-# for o in x2image["o"]:
-#     x2image["o"][o] = set(x2image["o"][o])
-
-# for o in x2image["O"]:
-#     x2image["O"][o] = set(x2image["O"][o])
-
-# for o1 in x2image["oo"]:
-#     for o2 in x2image["oo"][o1]:
-#         x2image["oo"][o1][o2] = set(x2image["oo"][o1][o2])
-
-# for o1 in x2image["oor"]:
-#     for o2 in x2image["oor"][o1]:
-#         for r in x2image["oor"][o1][o2]:
-#             x2image["oor"][o1][o2][r] = set(x2image["oor"][o1][o2][r])
-
-# top["oo_rrv"] = [e for e in top["oo_rr"] if ((not vocab["r"][e[1][1][0][0]]["cat"] == "direct") and 
-#                                              (not vocab["r"][e[1][1][1][0]]["cat"] == "direct"))]
-# # GOOD
-
-# patterns:
-# - query pattern + answer
-# - right verify pattern
-# - false verify pattern + sources
-# - pattern codes
-
-
-# def captialLetter
-
-# def questionMark:
-
-# patterns = {
-#     "exist": {
-
-#     }
-#     "queryAttr": [{
-#         "pattern": [
-#             "What {T> is/are <DO>?"
-#         ]
-#         "code":
-#         "answer":
-#         "constraint": [()]  
-#     }]
-
-#                 "what cat is o? subcat"
-#                 "What type/kind"
 
 def coords(o):
     return (o["x0"], o["y0"], o["x1"], o["y1"])
@@ -819,13 +608,7 @@ def vis(imageId):
                                linewidth=3))
         text = obj["name"]
         text += "\n"
-        # text += " ".join(obj["attributes"]) + " "
-        # if "predAttributes" in obj:
-        #     text += " ".join([o[0] for o in obj["predAttributes"]])
-        # text += "\n"
-        # text += " ".join([str(1) for _ in obj["attributes"]]) + " "
-        # if "predAttributes" in obj:
-        #     text += " ".join([str(o[1])[:5] for o in obj["predAttributes"]])
+
         if "pos" in obj:
             text += "({})".format(str(obj["pos"]))
         for relId in obj["posRels"]:
@@ -897,7 +680,7 @@ indToObjs = defaultdict(set)
 # for obj in vocab["o"]:
 #     indToObjs[obj] = set()
 for obj in vocab["o"]:
-    # obj = singularOf(obj) ???????????????????????????!?!?!?!?!?!?!?!?!?!!!?!?!?!?!?!?!?
+    # obj = singularOf(obj)
     inds = objAlts(obj, indicators = True)
     if not isAn(obj, "place"):
         if len(inds) > 0:
@@ -932,10 +715,6 @@ def catNormalize(obj, cat, k = False):
     # if not catInfo[cat]["qspecific"]:
     #     return None
     if cat in catNoncountable:
-        # ???????????????????????????!?!?!?!?!?!?!?!?!?!!!!?!?!?!?!!!!?!?!?!?!?!?!!?!?!?!?!
-        # if not k:
-        #     return None, "is"
-        # ???????????????????????????!?!?!?!?!?!?!?!?!?!!!!?!?!?!?!!!!?!?!?!?!?!?!!?!?!?!?!
         prob = 0.8
         slist, plist, ptos = catNoncountable[cat]
     else:
@@ -1286,23 +1065,6 @@ def customSmoother(b, gamma, gup, maxGamma): # gamma = 1.3, gup = 0.05  nts, b =
                     counts[j] = min(newProbs[j] * newHead, counts[j]) # max((probs[j]/sum(probs[:i])) * newHead, newGamma * counts[j+1])
         return counts
     return csmoother
-# def customSmoother(counts):
-#     gamma = 1.2 #1.3
-#     s = sum(counts)
-#     probs = [c/s for c in counts] 
-#     for i in range(len(counts)):
-#         # print(counts)
-#         if i == 0:
-#             continue
-#         s = sum(counts)
-#         tail = sum([c for c in counts[i:]])
-#         head = s - tail
-#         newHead = (min(0.1*(i+1),1) if i > 1 else 0) # (i-1) * tail # (1 - 1/i) * s
-#         if (sum(probs[i:]) > 0.15 or i == 1) and (head > newHead): # tail / s > 0.1
-#             # print(i, tail, s, head, newHead, gamma * counts[i])
-#             for j in range(i):
-#                 counts[j] = min(max((counts[j] / head) * newHead, gamma * counts[i]), counts[j])
-#     return counts
 
 lnF = lambda c, g: (np.log(g * c) + 1)
 sqrtF = lambda c, g: math.sqrt(g * c)
@@ -1326,23 +1088,13 @@ def select(gData, outField, goodIds, outCounter = None, pretypeCounter = None): 
         instance[outField] = goodIds[imageId]
         for qid in instance[outField]: # , question .items()
             question = instance["questions"][qid]
-            # if qid in goodIds:
-            #     instance[outField].append(qid) # [qid] = question # out
+
             if outCounter is not None: #  and cond is not None
                 outCounter[question["group"]] += 1 # [ans]
             if pretypeCounter is not None:
                 pretypeCounter[question["type"]] += 1
-                # ans = question["answer"]
-                # cans = catn(ans) or typeOf(ans, None)
-                # if cans is not None:
-                #     outCounter["cat"][cans][ans] += 1
-            ans = question["answer"]
-    #         canss = typeOf(ans, None, retAll = True) or [catn(ans)]
-    #         if canss is not None:
-    #             for cans in canss:
-    #                 cdansCounter2[cans][ans] += 1
 
-    # printDD(cdansCounter2, "finalGlobal")
+            ans = question["answer"]
 
 def unbias(gData, inField, outField, ratios): # , outCounter = None , outCounter = None
     for imageId in gData: 
@@ -1390,12 +1142,6 @@ def printStats(gdata, inField):
             typeCounter[question["type"]] += 1
             groupCounter[question["group"]] += 1
 
-    # print(inField)
-    # print("------------")    
-    # print(typeCounter)
-    # for c in sorted(groupCounter.keys()):
-    #     print(c, groupCounter[c])
-
 def multichoice(x, num, isDict = False):
     ret = x.keys() if isDict else x
     ret = [e for e in ret]
@@ -1414,9 +1160,6 @@ def subselectQuestions(questions, num = None, prob = None):
         num = int(math.ceil(prob * len(questions)))
 
     return multichoice(questions, num) # , isDict = True
-   
-    # inQuestions = [q for q in questions]
-    # return random.shuffle(inQuestions)[:num]
 
 def subuniqueQuestions(instance, qids, num = None, weak = False): # instance, 
     out = {}
@@ -1435,7 +1178,6 @@ def subuniqueQuestions(instance, qids, num = None, weak = False): # instance,
             if num is not None and len(out) == num:
                 break
     
-    # print("!!!!")
     # print([q["entailedQuestions"] for q in out.values()])
     return out.keys()
 
@@ -1456,21 +1198,7 @@ def selectEntailedQuestions(instance, qids, num):
 
     entailed = [(eq, i) for (eq, i) in entailed.items()]
     ret = sortedchoice(entailed, num) # multichoice  multichoice
-    # ret = {k: instance["questions"][k] for k in ks}
     return ret
-
-    # for question in questions:
-    #     if question["id"] in entailed:
-    #         entailed.remove(question["id"])
-
-    # out =
-    # if len(out) < num:
-    #     candidates = [q["id"] for q in instance["rQuestions"] if ((q["id"] not in questions) and (q["id"] not in out))]
-    #     out += multichoice(candidates, num - len(out))
-    
-    # if len(out) < num:
-    #     candidates = [q["id"] for q in instance["questions"] if ((q["id"] not in questions) and (q["id"] not in out))]
-    #     out += multichoice(candidates, num - len(out))
 
 def toRatios(counter):
     prob = {}
@@ -1657,17 +1385,6 @@ def normalizeCode(code):
     code = [c.replace("lchoose", "choose") for c in code]
     return code
 
-# def wnum(s):
-#     parts = s.split(" ")
-#     parts = [p for p in parts if p != ""]
-#     return len(parts)
-
-# def smartReplace(s, f, t, pointers):
-#     parts = s.split(f)
-
-#     newS = t.join(parts)
-#     return newS
-
 def toNumid(i):
     if i is None:
         return None
@@ -1732,11 +1449,6 @@ def normalizeString(s, question = False, cap = True, nonProb = False):
     if "on where" in s:
         print(s)        
     s = s.replace("on where", "where")    
-    # s = s.replace("is there salad ", "is there a salad")    
-    # s = s.replace("is there soup ", "is there a soup")
-    # s = s.replace("there is salad ", "there is a salad")
-    # s = s.replace("there is soup ", "is there a soup")    
-    # s = s.replace("s!he", "s/he")
     
     if not question:
         s = s.replace("[out]=0.03","")
@@ -1866,21 +1578,6 @@ def sampleString(s):
     s = " ".join(wordsOut)
     return s
 
-# tra
-
-#fruit|vegetable
-#baked
-
-# rooms = {'bathroom': 't', 'kitchen': "k", 'dining room': "l", 'bedroom': "b", 'living room': "l", 'restroom': 'b'}
-# places = ['ocean', 'shore', 'sea', 'farm', 'garden', 'restaurant', 'market', 'park', 'town', 'skate park', 'zoo', 
-#     'yard', 'harbor', 'store', 'shop', 'train station', 'parking lot', 
-#     'street', 'room', 'city', 'library', 'church', 'hotel',  'garage', 'stadium', 'outside', 
-#     'hallway', 'office', 'station', 'beach', 'forest', 'airport', 'desert', 
-#     'field', 'outfield', 'tunnel', 'coast'] + rooms.keys()
-
-# 
-# referRelBlacklist = [("playing", "o")]
-
 def catOf(o):
     oname = o["name"] 
     if "senses" in o and "o_" + oname in o["senses"]:
@@ -1888,22 +1585,6 @@ def catOf(o):
     if oname in vocab["o"]:
         return vocab["o"][oname]["cat"]
     raise Exception("nonvocab object")
-
-# def isStandalone(o):
-#     c = catOf(o)
-#     # if c is None:
-#     #     return False    
-#     exception = vocab["o"][oname]["exception"]    
-#     catStandalone = catInfo[c]["standalone"]
-#     #standalone = (catStandalone and not exception) or (not catStandalone and exception)
-#     standalone = catStandalone or exception
-#     return standalone
-
-# def sameSimcatOf(attribute, simCats):
-#     for sc in vocab["a"][attribute]["simcat"]:
-#         if sc in simCats:
-#             return True
-#     return False
 
 def isAttrObj(obj):
     isMain = vocab["o"][obj]["main"] == 0
@@ -1942,19 +1623,6 @@ def attrNotTrivial(attr, obj):
 def isLikely(attr, obj):
     # nProb check?
     return statOf(obj, attr, p = True) > args.aProb and statOf(obj, attr, p = False) > args.aCount 
-
-# def attrSameType(obj, attribute):
-#     t = typeOf(attribute, obj) #vocab["a"][a]["cat"]
-#     if t is None:
-#         return []
-#     sameType = [a for a in vocab["a"] if typeOf(a, None) == t and a != attribute]
-#     return sameType
-
-# def attrAlternatives(obj, attribute): # , attributes
-#     sameType = attrSameType(obj, attribute)   
-#     tooSimilarCats = vocab["a"][attribute]["simcat"]
-#     diff = [a for a in sameType if a not in tooSimilar and not sameSimcatOf(a, tooSimilarCats)]
-#     return diff 
 
 def attrSims(attribute):
     simAtts = set()
@@ -2043,12 +1711,6 @@ def candidateAttr(instance, obj, attribute, smoothing = True, likely = True, ext
         return [(a, 1) for a in alts]
 
     return None if likely else choice(alts)
-    # return candidate  
-
-# def isMain(o):
-#     if o in vocab["o"]:
-#         return vocab["o"][o]["main"]
-#     return False
 
 def inclusionRate(c1, c2):
     if size(c1) == 0:
@@ -2058,24 +1720,7 @@ def inclusionRate(c1, c2):
     return inclusionRate
 
 def partOfRate(o1, o2):
-    # if (isA(o1, "body part") and isA(o2, "alive")) or \
-    #     (isA(o1, "vehicle part") and isA(o2, "vehicle")):
     return inclusionRate(coords(o1), coords(o2))
-    # return 0.0
-
-# def objs(c, main = True):
-#     objList = []
-#     objList += catInfo["o"]["main" if main else "extra"]
-#     for s in objCats[c]:
-#         objList += objs(s, main)
-#     return objList
-
-# def allObjs(c):
-#     return objs(c, True) + objs(c, False)
-
-# attTypes = set('color', 'material', 'activity', 'size', 'shape', 'age', 'height', 'length', 'weight', 'tone', 'brightness'
-#     'depth', 'texture', 'thickness', 'race', 'company', 'pattern', 'face expression', 'orientation', 'width', 
-#     'state', 'gender', 'room', 'liquid', 'sport', 'cleanliness', 'weather', 'fatness', 'realism', 'hardness')
 
 pos2phrase = { # 
     "left": "on the left", # [side]=0.25 of?
@@ -2098,35 +1743,14 @@ def sideOf(pos):
 def probSideOf(pos):
     return 0 if pos in ["left", "right"] else 0.3
 
-# pos2adj = {
-#     "left": "to the left of", # of?
-#     "right": "to the right of"
-# }
-
 def formsOf(objName, fltr = True):
     sObject = singularOf(objName)
     if fltr and sObject not in existanceObjs:
         sObject = None
-    # sObject = sObject if sObject in existanceObjs else None # ?????
     pObject = None if isMass(objName) else pluralOf(objName)
-    # if fltr and pObject not in vocab["o"]: # ???????? ???????????????????????????????????????????????
-    #     pObject = None
     if fltr and objName == "glass":
         pObject = None
     return sObject, pObject
-
-# def normalizeObj(objname):
-    # return singularOf(objname) if isPlural(objname) else objname
-
-# def gramsOf(objname):
-#     grams = [objname]
-#     if isSingular(objname) or isPlural(objname):
-#         grams.append(pluralOf(objname) if isSingular(objname) else singularof(objname))
-#     return grams
-
-# def formsOf(objname):
-#     return 
-# pluralof
 
 def uniqueL(instance, objId, objIds, among):
     if among != []:
@@ -2192,10 +1816,6 @@ def uniqueACats(instance, objId, attr, q = False):
     ans = refCats(obj, q = q, a = True)
     ans = [a for a in ans if uniquePO(instance, objId, a, attr)[0]]
     return ans
-
-    # ans = specificAncestors(catOf(obj))
-    # if any(a in instance["objectSet"] for a in ans):
-    #     return False
 
 # test with family func? 
 def notexists(instance, objname):
@@ -2288,19 +1908,9 @@ def dPrefix(obj):
     cond = coin(0.9) or isPlural(obj["name"])
     return "the" if cond else "that"
 
-    # ret = ["the"]
-    # if isMainObj(obj):
-    #     ret.append(thises(obj["name"]))
-    # return ret
-
 def aPrefix(objName):
     ret = en.noun.article(objName).split(" ")[0] # []
     return ret
-    # if isMain(obj):
-    #     if isSingular(obj):
-    #         ret.append("this")
-    #     else:
-    #         ret.append("these")
 
 def cany(first): # , firstAny
     if first:
@@ -2491,12 +2101,6 @@ def similarRel(rel1, rel2):
 
 def notlikely(rel):
     return False
-    # r = rel["rel"]
-    # s = instance["objects"][rel["subj"]]["name"]
-    # o = instance["objects"][rel["obj"]]["name"]
-    # if r not in counts["rs"] or r not in counts["ro"]:
-    #     return True
-    # return counts["rs"][r].get(s,0) <= 1 and counts["ro"][r].get(o,0) <= 1 # or or and??
 
 def isloop(instance, rel):
     subjName = instance["objects"][rel["subj"]]["name"]
@@ -2519,12 +2123,6 @@ def bad(instance, rel, loopcheck = True):
             return True            
     return notlikely(rel) or (loopcheck and isloop(instance, rel)) or \
         isAn(subjName, "part") or isAn(objName, "part")
-
-# def whereRel(rel):
-#     r = rel["rel"]
-#     s = instance["objects"][rel["subj"]]["name"]
-#     o = instance["objects"][rel["obj"]]["name"]
-#     return isAn(o,"place") or rel["rel"] == "at"
 
 def isMultiSubj(instance, rel):
     r = rel["rel"]
@@ -2578,11 +2176,6 @@ def tooGeneral(ans):
     return vocab["o"][ans]["tooGeneral"]
     # return (relInfo["cat"] == "averb" and rel["subj"] == "person")
 
-# def trivialO(rel):
-#     relInfo = vocab["r"][rel["rel"]]
-#     objInfo = vocab["o"][rel["info"]]
-#     return objInfo["tooGeneral"]
-
 # relate
 objDirCode = lambda objId, objName: "select: {objName} ({objId})".format(objName = objName, objId = objId)
 relObjCode = lambda func, objId, objName, rel, subj: "{func}: {obj},{rel},{so} ({objId})".format( \
@@ -2592,13 +2185,6 @@ filterByAttrCode = lambda attr, ta: "filter{t}: {a}".format(t = (" " + ta) if ta
 filterByNotAttrCode = lambda attr, ta: "filter{t}: not({a})".format(t = (" " + ta) if ta is not None else "", a = attr)
 orelsCode = lambda sourceId, sourceName, rel, targetId, targetName, subj: \
    [objDirCode(sourceId, sourceName), relObjCode("relate", targetId, targetName, rel, subj)] # code
-
-# def adRefs(refs):
-#     ret = [["the {}".format(ref)] for ref in refs]
-#     aans = [geta(ref) for ref in refs]
-#     if all([a != "" for a in aans]) and random.random() < 0.5:
-#         return [["{a} {ref}".format(a = geta(ref), ref = ref)] for ref in refs]
-#     return ret
 
 def adRefs(refs):
     ret = ["the {}".format(ref) for ref in refs]
@@ -2639,19 +2225,6 @@ def inImg(shown = False, oIs = None):
         else:
             return "in_the|this_scene|photograph"
 
-        # if obj is not None and instance is None:
-        #     isFood = isA(obj, "food")
-        #     for rel in obj["outRels"]:
-        #         if rel["rel"] in ["on", "above"]:
-        #             if rel["obj"] == "plate" and isFood:
-        #                 ret += "\on_the_plate"
-        #             if rel["obj"] == "pizza":
-        #                 ret += "\on_the_pizza"
-        #             if rel["obj"] == "table" and obj["name"] == "tablecloth":
-        #                 ret += "\on_the_table"
-        #             if rel["obj"] in ["sofa", "bed", "couch"] and obj["name"] == "pillow"
-        # return ret
-
 def getObjCode(objId, obj, objName, attr = None, nt = False, clean = False, attrType = None):
     code = {"dobject": {"code": [objDirCode(objId, objName)]}}
     if attrType is None:
@@ -2672,49 +2245,10 @@ def addAttrFilter(code, attr, nt = False, attrType = None)
 
 def definedSubjAlt(instance, objs, subjo, subj, r, o, cat = None):
     return None
-    # inSubjs = instance["ro"][r][singularOf(o)].keys() 
-    # simsSubj = objSims(subj)
-    # catCond = lambda s: True if cat is None else isAn(s, cat)    
-    # cond = lambda s, sj: (singularOf(s) not in inSubjs) and (s not in simsSubj) \
-    #     and catCond(s) and (mod(s) == mod(subj)) and (s not in blacklistObjs) \
-    #     and singularOf(s) != singularOf(o) and (not overlapping(coords(sj), coords(subjo))) \
-    #     and (s not in tooCommon) and (not isFamily(s, subj)) # need isFamily check????
-
-    # candidates = []
-    
-    # for sid in objs:
-    #     sj = instance["objects"][sid]
-    #     s = sj["name"]
-    #     c = countOfRel(s, r, o)
-    #     if c > 10 and cond(s, sj):
-    #         candidates.append(sid) # (sid, c)
-    
-    # chosen = choice(candidates) # sample True ????????????? , smoothing = False
-    # return chosen
 
 def definedObjAlt(instance, objs, objo, s, r, obj, cat = None):
     return None
-    # inObjs = instance["sr"][singularOf(s)][r].keys()  
-    # simsObj = objSims(obj)
-    # catCond = lambda o: True if cat is None else isAn(o, cat)
-    # cond = lambda o, oj: (singularOf(o) not in inObjs) and (o not in simsObj) \
-    #     and catCond(o) and (mod(o) == mod(obj)) and (o not in blacklistObjs) \
-    #     and (singularOf(s) != singularOf(o)) and (not overlapping(coords(oj), coords(objo))) \
-    #     and (o not in tooCommon) and (not isFamily(o, obj))  # need isFamily check????
 
-    # candidates = []
-    
-    # for oid in objs:
-    #     oj = instance["objects"][oid]
-    #     o = oj["name"]
-    #     c = countOfRel(s, r, o)
-    #     if c > 10 and cond(o, oj):
-    #         candidates.append(oid) # (oid, c)
-    
-    # chosen = choice(candidates) # sample True ????????????? , smoothing = False
-    # return chosen
-
-# return id if exists?
 def undefinedSubjAlt(instance, subj, r, o, cat = None, getAll = False):    
     inSubjs = instance["ro"][r][singularOf(o)].keys() # [] # 
     simsSubj = objSims(subj)
@@ -3093,7 +2627,6 @@ def indirectRef(instance, objId, short, that, ithat, blackAType, blackObjIds, bl
 
     return sample([(r,c) for r,c in refs if r is not None])
 
-#this|shown|pictured|presented = 0.42 0.42 0.08 0.08
 def definedRef(instance, objId, direct, short = False, answer = False, that = False, ithat = False, simple = False, # addShort = False, 
     onlyPrefix = False, blackAType = [], blackObjIds = [], blackRS = None, blackRO = None, isSubj = True): # simple = None? # inImg = True, of = True, 
     obj = instance["objects"][objId]
@@ -3274,351 +2807,6 @@ def shouldBeSimpleC(rel, cat):
     return vocab["r"][rel["rel"]]["cat"] == "averb" and \
         (rel["rel"] in stativeList or coin(0.14 if liveC(cat) else 0.18)) # 08 (not liveC(cat)) or random.random() < 0.16)
 
-# def newRef(objId, name, text, isName, isCont, thatCont, unique, others, prob):
-#     newRef = {
-#         "text": text,
-#         # "definition"
-#         "objId": objId,
-#         "prob": prob,
-#         "name": name,
-#         "constraints": {
-#             "objs": {objId: {"attributes": [], "pos": [], "same": [], "name": isName}},
-#             "rels": {} # "rels": [], 
-#         } 
-#         "directCont": isCont, "thatCont": thatCont, 
-#         "unique": unique, "others": others,
-#         "prefix": None
-#     }
-#     return newRef
-
-# def adjRefs(instance, objName, objId, isName, defined, nonAttr):
-#     obj = instance[objId]
-#     refs = []
-#     prefixes = dPrefixes(obj) if defined else aPrefixes(obj)
-#     for p in prefixes:
-#         if nonAttr:
-#             cont = p not in ["this", "these"]
-#             uniqueObj, others = uniqueO(instance, objId, objName, among = [])
-#             text = "{prefix} {obj}".format(prefix = p, obj = objName)
-#             prob = 1.0 
-#             ref = newRef(objId, objName, text, isName, isCont = cont, thatCont = cont, 
-#                 unique = uniqueObj, others = others, prob = prob)
-#             refs.append(ref)
-
-#         attrList = vocab["a"][attr]["syms"] + [attr]
-#         if vocab["a"][attr]["adjForm"] != "":
-#             attrList.append(vocab["a"][attr]["adjForm"])
-#         attrText = "|".join(["({})".format(a) for a in attrList])
-
-#         for attr in obj["attributes"]:
-#             common = True
-#             prefix = vocab["a"][attr]["isPrefix"]
-#             prior = 0.5 if uniqueObj else 1.0
-#             unique, others = uniqueAO(instance, objId, objName, attr, among = [])
-#             if args.stats > 0:
-#                 common = pf.search(pf.Corpus.AMERICAN_ENGLISH, "{attr} {obj}".format(attr = attr, obj = objName)).phrases[0].match_count > args.stats:
-#             if prefix and common:
-#                 text = "{prefix} {attr} {obj}".format(prefix = p, attr = attrText, obj = objName)
-#                 prob = 1.0 * prior
-#                 ref = newRef(objId, objName, text, isName, isCont = cont, thatCont = cont, 
-#                     unique = unique, others = others, prob = prob)
-#                 ref["constraints"]["objs"][objId]["attributes"].append(attr)
-#                 refs.append(ref)
-
-#             # test valid?
-#             if (p == "the" and vocab["a"][attr]["isAdj"]) or 
-#                 ((p not in ["this", "these"]) and (not prefix)): # (typeOf(attr, obj) == "material")
-#                 if vocab["a"][attr]["adjForm"] != "":
-#                     attrList = vocab["a"][attr]["syms"] + [vocab["a"][attr]["adjForm"]]
-#                     attrText = "|".join(["({})".format(a) for a in attrList])
-#                 if typeOf(attr, obj) == "material":
-#                     text = "{prefix} {obj} that {isr} made [out]=0.03 of {attr}".format(prefix = p, attr = attrText, obj = objName, isr = isare(objName))
-#                 else:
-#                     text = "{prefix} {obj} that {isr} {attr}".format(prefix = p, attr = attrText, obj = objName, isr = isare(objName))
-#                 prob = (0.2 if prefix else 1.0) * prior
-#                 ref = newRef(objId, objName, text, isName, isCont = False, thatCont = False, 
-#                     unique = unique, others = others, prob = prob)
-#                 ref["constraints"]["objs"][objId]["attributes"].append(attr)
-#                 refs.append(ref)
-
-#             simpleAttr = toSimple(attr, objName)
-#             hasSimple = (rel != simpleAttr)
-            
-#             if hasSimple and (p not in ["this", "these"]):
-#                 if attr in ["sitting","lying"]
-#                     simpleAttr = "({a1})|({a2}-down)|({a3} down)".format(a1 = simpleAttr, a2 = simpleAttr, a3 = simpleAttr)
-                
-#                 text = "{prefix} {obj} that {attr}".format(prefix = p, attr = simpleAttr, obj = objName, isr = isare(objName))
-#                 prob = prior
-#                 ref = newRef(objId, objName, text, isName, isCont = False, thatCont = False, 
-#                     unique = unique, others = others, prob = prob)
-#                 ref["constraints"]["objs"][objId]["attributes"].append(attr)
-#                 refs.append(ref)                   
-    
-#     return refs
-
-# #if defined: # TODO!!!!! ????????
-# def posRefs(instance, refs):
-#     newRefs = []
-#     for ref in refs:
-#         objId = ref["objId"]
-#         obj = instance[objId]
-#         prior = 0.3 if ref["unique"] else 1.0
-#         #if ref["unique"] 
-#         for pos in obj["pos"]:
-#             if ref["directCont"]:
-#                 newRef1 = copy.deepcopy(ref)
-#                 newRef1["text"] += " {pos}".format(pos2phrase[pos])
-#                 newRef1["prob"] *= prior # 0.6 
-#                 newRef1["constraints"]["objs"][objId]["pos"].append(pos)
-#                 newRef1["directCont"] = False
-#                 newRef1["unique"], newRef1["others"] = uniqueAO(instance, objId, newRef1["name"], pos, among = newRef1["others"])
-#                 newRefs.append(newRef1)  
-            
-#             if ref["thatCont"]:
-#                 newRef2 = copy.deepcopy(ref)
-#                 newRef2["text"] += " that {isr} {pos}".format(isr = isare(newRef2["name"]), pos = pos2phrase[pos])
-#                 newRef2["prob"] *= prior #(0.3 if ref["unique"] else 1.0) # 0.4
-#                 newRef2["constraints"]["objs"][objId]["pos"].append(pos)
-#                 newRef2["directCont"] = False
-#                 newRef2["thatCont"] = False
-#                 newRef2["unique"], newRef2["others"] = uniqueAO(instance, objId, newRef2["name"], pos, among = newRef2["others"])
-#                 newRefs.append(newRef2)
-
-#     return newRefs
-
-# newRef = {
-#     "text": text,
-#     "objId": objId,
-#     "prob": prob,
-#     "name": name,
-#     "constraints": {
-#         "objs": {objId: {"attributes": [], "pos": [], "same": [], "name": isName}},
-#         "rels": [] # "rels": [], 
-#     },
-#     "directCont": isCont, "thatCont": thatCont, 
-#     "unique": unique, "others": others
-#     "prefix": None
-# }
-
-# # TODO? add article like? the cat next to a tree instead of the??
-# # refs for active? 0?
-# # 
-# def modProb(hasSimple, stative, direct):
-#     if hasSimple:
-#         if stative:
-#             directProb, relProb, srelProb = 0.0, 0.0, 1.0
-#         else:
-#             directProb, relProb, srelProb = 0.0, 0.8, 0.2
-#     else:
-#         if direct:
-#             if rel in ["of", "with"]:
-#                 directProb, relProb, srelProb = 1.0, 0.0, 0.0
-#             else:
-#                 directProb, relProb, srelProb = 0.65, 0.35, 0.0
-#         else:
-#             directProb, relProb, srelProb = 0.0, 1.0, 0.0
-
-#     return directProb, relProb, srelProb
-
-# def relRefs(instance, objId, refs, maxCount):
-#     obj = instance[objId]
-#     outObjsRefs = {}
-#     for relId in obj["outRels"]:
-#         rel = obj["outRels"][relId]
-#         relWord = rel["rel"]
-#         otherObjId = rel["obj"]
-#         objRefs = objRef(instance, otherObjId, True, maxCount - 1)
-#         newInfoObjRefs = [ref for ref in objRefs if objId not in ref["constraints"]["objs"]]  
-#         outObjsRefs[otherObjId] = newInfoObjRefs
-
-#     inObjsRefs = {}
-#     for relId in obj["inRels"]:
-#         rel = obj["outRels"][relId]
-#         relWord = rel["rel"]
-#         otherObjId = rel["obj"]
-#         objRefs = objRef(instance, otherObjId, True, 0)
-#         newInfoObjRefs = [ref for ref in objRefs if objId not in ref["constraints"]["objs"]]  
-#         inObjsRefs[otherObjId] = newInfoObjRefs
-
-#     newRefs = []
-#     # for ref in refs:
-#     for relId in obj["outRels"]:
-#         rel = obj["outRels"][relId]
-#         relP = rel["rel"]
-
-#         direct = vocab["r"][relP]["cat"] == "direct" 
-#         simpleRel = toSimple(relP, obj["name"])
-#         hasSimple = (relP != simpleRel) or (relP in stativeRel)
-#         stative = relP in stativeRel
-        
-#         otherObjId = rel["obj"]
-#         otherObj = instance[otherObjId]
-#         inObjs = [r["subj"] for r in otherObj["inRels"] if similarRel(r["rel"], rel["rel"])]  
-#         # just with this rel or any rel?????????????????????
-
-#         for ref in refs:
-#             if ref["thatCont"]:
-#                 directProb, relProb, srelProb = modProb(hasSimple, stative, direct and ref["directCont"])
-
-#                 prior = 0.2 if ref["unique"] else 1.0
-#                 for otherObjRef in outObjsRefs[otherObjId]:
-#                     if directProb > 0:
-#                         newRef = copy.deepcopy(ref)
-#                         newRef["text"] = "{obj} {rel} {otherObj}".format( \
-#                             obj = ref["text"], isr = isare(obj["name"]), rel = relP, otherObj = otherObjRef["text"])
-#                         newRef["prob"] *= (prior * directProb) 
-#                         newRef["directCont"] = False
-#                         ############ ?????????????????????? that? the X on the ... that is .... ???                        
-#                         newRef["unique"], newRef["others"] = uniqueL(instance, objId, newRef["others"], inObjs)
-#                         newRef["constraints"]["objs"].update(otherObjRef["constraints"]["objs"])
-#                         newRef["constraints"]["rels"].append(relId)
-#                         newRefs.append(newRef)
-
-#                     if relProb > 0:
-#                         newRef = copy.deepcopy(ref)
-#                         newRef["text"] = "{obj} that {isr} {rel} {otherObj}".format( \
-#                             obj = ref["text"], isr = isare(obj["name"]), rel = relP, otherObj = otherObjRef["text"])
-#                         newRef["prob"] *= (prior * relProb) 
-#                         newRef["directCont"] = False
-#                         newRef["thatCont"] = False
-#                         newRef["unique"], newRef["others"] = uniqueL(instance, objId, newRef["others"], inObjs)
-#                         newRef["constraints"]["objs"].update(otherObjRef["constraints"]["objs"])
-#                         newRef["constraints"]["rels"].append(relId)
-#                         newRefs.append(newRef)
-
-#                     if srelProb > 0:
-#                         newRef = copy.deepcopy(ref)
-#                         newRef["text"] = "{obj} that {rel} {otherObj}".format( \
-#                             obj = ref["text"], isr = isare(obj["name"]), rel = simpleRel, otherObj = otherObjRef["text"])
-#                         newRef["prob"] *= (prior * srelProb) 
-#                         newRef["directCont"] = False
-#                         newRef["thatCont"] = False
-#                         newRef["unique"], newRef["others"] = uniqueL(instance, objId, newRef["others"], inObjs)
-#                         newRef["constraints"]["objs"].update(otherObjRef["constraints"]["objs"])
-#                         newRef["constraints"]["rels"].append(relId)
-#                         newRefs.append(newRef)
-
-#     for relId in obj["outRels"]:
-#         rel = obj["outRels"][relId]
-#         relP = rel["rel"]
-
-#         direct = vocab["r"][relP]["cat"] == "direct" 
-#         simpleRel = toSimple(relP, obj["name"])
-#         hasSimple = (relP != simpleRel) or (relP in stativeRel)
-#         stative = relP in stativeRel
-        
-#         otherObjId = rel["obj"]
-#         otherObj = instance[otherObjId]
-#         inObjs = [r["subj"] for r in otherObj["inRels"] if similarRel(r["rel"], rel["rel"])]  
-#         # just with this rel or any rel?????????????????????
-
-#         for ref in refs:
-#             if ref["thatCont"]:
-#                 directProb, relProb, srelProb = modProb(hasSimple, stative, direct and ref["directCont"])
-
-#                 prior = 0.2 if ref["unique"] else 1.0
-#                 for otherObjRef in inObjsRefs[otherObjId]:
-#                     if directProb > 0:
-#                         newRef = copy.deepcopy(ref)
-#                         newRef["text"] = "{obj} {rel} {otherObj}".format( \
-#                             obj = ref["text"], isr = isare(obj["name"]), rel = relP, otherObj = otherObjRef["text"])
-#                         newRef["prob"] *= (prior * directProb) 
-#                         newRef["directCont"] = False
-#                         ############ ?????????????????????? that? the X on the ... that is .... ???                        
-#                         newRef["unique"], newRef["others"] = uniqueL(instance, objId, newRef["others"], inObjs)
-#                         newRef["constraints"]["objs"].update(otherObjRef["constraints"]["objs"])
-#                         newRef["constraints"]["rels"].append(relId)
-#                         newRefs.append(newRef)
-
-#                     if relProb > 0:
-#                         newRef = copy.deepcopy(ref)
-#                         newRef["text"] = "{obj} that {isr} {rel} {otherObj}".format( \
-#                             obj = ref["text"], isr = isare(obj["name"]), rel = relP, otherObj = otherObjRef["text"])
-#                         newRef["prob"] *= (prior * relProb) 
-#                         newRef["directCont"] = False
-#                         newRef["thatCont"] = False
-#                         newRef["unique"], newRef["others"] = uniqueL(instance, objId, newRef["others"], inObjs)
-#                         newRef["constraints"]["objs"].update(otherObjRef["constraints"]["objs"])
-#                         newRef["constraints"]["rels"].append(relId)
-#                         newRefs.append(newRef)
-
-#                     if srelProb > 0:
-#                         newRef = copy.deepcopy(ref)
-#                         newRef["text"] = "{obj} that {rel} {otherObj}".format( \
-#                             obj = ref["text"], isr = isare(obj["name"]), rel = simpleRel, otherObj = otherObjRef["text"])
-#                         newRef["prob"] *= (prior * srelProb) 
-#                         newRef["directCont"] = False
-#                         newRef["thatCont"] = False
-#                         newRef["unique"], newRef["others"] = uniqueL(instance, objId, newRef["others"], inObjs)
-#                         newRef["constraints"]["objs"].update(otherObjRef["constraints"]["objs"])
-#                         newRef["constraints"]["rels"].append(relId)
-#                         newRefs.append(newRef)
-
-#     return newRefs
-
-# def sameRefs(instance, refs):
-#     newRefs = []
-#     for ref in refs:
-#         objId = ref["objId"]
-#         obj = instance[objId]
-
-#     return newRefs
-
-# def twoRefs(instance, refs):
-#     newRefs = []
-#     for ref in refs:
-#         objId = ref["objId"]
-#         obj = instance[objId]
-
-#     return newRefs
-
-# def objRefs(instance, objId, defined, maxCount = 2, objCount = 2):
-#     obj = instance["objects"][objId]
-#     objName = obj["name"]
-#     if not isMain(objName):
-#         return None
-#     cats = []
-#     c = catOf(obj)
-#     if c is not None:
-#         cats = ancestors(c)
-#     refs = adjRefs(instance, objName, objId, True, defined, True)
-#     for cat in cats:
-#         refs += adjRefs(instance, cat, objId, False, defined, catInfo[cat]["specific"])
-    
-#     refs += posRefs(instance, refs)
-
-#     sourceRefs = refs
-#     for _ in range(objCount):
-#         sourceRefs = relRefs(instance, objId, sourceRefs, maxCount)
-#         refs += sourceRefs
-    
-#     refs += twoRefs(instance, refs)
-#     refs += sameRefs(instance, refs)
-
-#     uniqueRefs = [ref for ref in refs if ref["unique"]]
-
-#     return uniqueRefs
-
- # = {"objs": [], "attr2obj": {}} 
-
-# TODO: that for object: A O, O Rel, O that is, O that is [not] A, O that is rel O2, O that O2 is rel (for case when other are), C instead of O,
-# O that is both X and Y, that is made of..., O that is X but not Y, C that is not O
-# different for that and a? a c that is not a more common than the c that is not o
-# (that is), prefix Ther is... it.
-# same as relate that is|has the same <type> as 
-# not
-# o that is not rel, 
-# on the left/right (global)
-# rel/posrel
-# this, it, prefix... 
-
-# verify -> yes / no
-# choose -> list
-# query -> type
-# attr nouns: liquid, sport, material, company
-# generateAll = ["chooseAttr"]
-# TODO:!!! different probs for choose, query, verify
 def verifyAttrs(data):
     data["attributes"] = sorted(data["attributes"])
     ret = data["dobject"]["code"]
@@ -3676,37 +2864,6 @@ def verifyAttrs(data):
     # ret += ["verify: {attr} [{step}]".format(attr = attr, step = len(ret) - 1) for attr in data["attributes"]]
     # ret.append("and [{}]".format(",".join(map(str, args))))
     return ret
-
-# "verifyState":  "select: scene", "verify {type}: {attr}" | "scene.verify {type}: {attr}"
-# "queryState": "select: scene", "query: {type}" | "scene.query: {type}"
-# "chooseState": "select: scene", "choose {type}: {|candidates}" | "scene.choose {type}: {|candidates}"
-# "queryAttr": "select: DOBJECT", "query: {type}" | "oid.query: {type}"
-# "verifyAttr": "select: DOBJECT", "verify {type}: {attr}" | "oid.verify {type}: {attr}"
-# "verifyAttrs": "select: DOBJECT", "verify {type}: {attr}", "verify {type}: {attr}", "and: {s1}, {s2}" | "oid.verify {type}: {attr}.verify {type}: {attr}.and"
-# "chooseAttr": "select: DOBJECT", "choose {type}: {|candidates}" | "oid.choose {type}: {|candidates}"
-# "exist": "select: OBJECT", "query: exist" | "oid.[filter {t}: not({a}).]exist"
-# "existRel": "select: DOBJECT", "relate: REL", "query: exist" | "oid.@rel,d@ oid.exist"
-# "logicOr": "select: DOBJECT1", "select: DOBJECT2" | "oid1.oid.2[filter {t}: not({a}).]or"
-# "logicAnd": "select: DOBJECT1", "select: DOBJECT2" | "oid1.oid.2[filter {t}: not({a}).]and"
-# "queryObject": "select: DOBJECT", "query: name" | "oid.query: name"
-# "chooseObject": "select: DOBJECT", "choose name: {|candidates}" | "oid.choose name: {|candidates}"
-# "queryRel": "select: DOBJECT", "relate: REL", "query: name" | "oid.@rel,d@ oid.query: name"
-# "verifyRel": "select: DOBJECT", "verify rel: REL" | "oid.verify rel: @rel,d@ oid"
-# "chooseRel": "select: DOBJECT", "choose rel: REL {|candidates}" | "oid.choose rel: (|candidates,d) oid"
-# "chooseObjRel": "select: DOBJECT", "relate: REL", "choose name: {|candidates}" | "oid.@rel,d@ oid.choose name: {|candidates}"
-# "allSame": "select: DOBJECT", "same: {type}" | "{cat}.same: {type}"
-# "allDiff": "select: DOBJECT", "different: {type}" | "{cat}.different: {type}"
-# "compare": "select: DOBJECT1", "select: DOBJECT2", "lchoose {comparative}: {s1}, {s2}" | "oid.oid.{comparative}"
-# "common": "select: DOBJECT1", "select: DOBJECT2", "common: {s1}, {s2}" | "oid.oid.common"
-# "same": "select: DOBJECT1", "select: DOBJECT2", "same {type}: {s1}, {s2}" | "oid.oid.same {type}"
-# "diff": "select: DOBJECT1", "select: DOBJECT2", "different {type}: {s1}, {s2}" | "oid.oid.different {type}"
-# "REL": "@rel,d@ oid"
-
-# DOBJECT: "select: {objName} ({objId})"
-# REL: "{obj},{rel},{so} ({objId})"
-
-# "filter {t}: {a}"
-# "filter {t}: not#{a}"
 
 pattern = {
     "o": r"!o:[a-z0-9\-\\\[\]\* ]*!", # () ()
@@ -4122,8 +3279,6 @@ def erf2cr(erf):
     cr[-1] = re.sub(r"@(.*),", r"@(.*)&\1,", cr[-1])    
     return "/".join(cr)
 
-# def erf2cor(ccode): TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 def vrf2cr(vrf):
     cr = re.sub(r"@(.*),", r"@(.*)&\1,", vrf[:-2])
     cr = cr.replace("/verify", "/choose")
@@ -4145,32 +3300,6 @@ def er2vr(er):
     vr = er.split("/")[:-1]
     vr[-1] = "verify rel: {}".format(vr[-1])
     return "/".join(vr) + er[-2:]
-
-# def vrf2cor(ccode): TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# "verifyState": "scene.verify {type}: {attr}"
-# "queryState": "scene.query: {type}"
-# "chooseState": "scene.choose {type}: {|candidates}"
-# "queryAttr": "oid.query: {type}"
-# "verifyAttr": "oid.verify {type}: {attr}"
-# "verifyAttrs": "oid.verify {type}: {attr}.verify {type}: {attr}.and"
-# "chooseAttr": "oid.choose {type}: {|candidates}"
-# "exist": "oid.[filter {t}: not#{a}.]exist"
-# "existRel": "oid.@rel,d@ oid.exist"
-# "logicOr": "oid1.oid2.[filter {t}: not#{a}.]or"
-# "logicAnd": "oid1.oid2.[filter {t}: not#{a}.]and"
-# "queryObject": "oid.query: name"
-# "chooseObject": "oid.choose name: {|candidates}"
-# "queryRel": "oid.@rel,d@ oid.query: name"
-# "verifyRel": "oid.verify rel: @rel,d@ oid"
-# "chooseRel": "oid.choose rel: @|candidates,d@ oid"
-# "chooseObjRel": "oid.@rel,d@ oid.choose name: {|candidates}"
-# "allSame": "{cat}.same: {type}"
-# "allDiff": "{cat}.different: {type}"
-# "compare": "oid.oid.{comparative}"
-# "common": "oid.oid.common {type}"
-# "same": "oid.oid.same {type}"
-# "diff": "oid.oid.different {type}"
 
 def directEntailed(ccode, codeGroup):
     es = []
@@ -4256,13 +3385,7 @@ def directEntailed(ccode, codeGroup):
         newCcode = cr2vrt(ccode)
         if newCcode is not None:
             es.append((newCcode, "verifyRelT"))
-    # elif codeGroup == "chooseObjRel":
-        # es.append((cor2vrt(ccode), "verifyRelT"))    
     elif codeGroup == "verifyRelT":
-        # es.append((vr2vr(ccode), "verifyRelT"))
-        # es.append((vr2er(ccode), "existRelT"))
-        # es.append((vrt2qr(ccode, "o"), "queryRel"))
-        # es.append((vrt2qr(ccode, "s"), "queryRel"))
         newCcode = vrt2vrf(ccode)
         if newCcode is not None:
             es.append((newCcode, "verifyRelF"))
@@ -4272,12 +3395,9 @@ def directEntailed(ccode, codeGroup):
     elif codeGroup == "existRelF":
         es.append((erf2cr(ccode), "chooseRel"))
         es.append((er2vr(ccode), "verifyRelF"))        
-        # es.append(q2cor(ccode), "chooseObjRel")   *****
     elif codeGroup == "verifyRelF":
-        # es.append((vr2vr(ccode), "verifyRelF"))        
         es.append((vrf2cr(ccode), "chooseRel"))
         es.append((vr2er(ccode), "existRelF"))
-        # es.append(vrf2cor(ccode), "chooseObjRel")   *****
     elif codeGroup in ["allSameT", "allSameF", "allDiffT", "allDiffF", "sameT", "sameF", "diffT", "diffF" ]:
         if "same" in codeGroup.lower():
             ct = codeGroup.replace("Same", "Diff").replace("same", "diff")
@@ -4297,10 +3417,6 @@ def directEntailed(ccode, codeGroup):
 
     return es
 
-# ADD OBJECT ID
-# MARK NOT IN THE IMG SUFFIX
-
-# questions = {}
 idCounter = 0
 pidCounter = 0
 
@@ -4322,30 +3438,12 @@ def lookOf(isP):
 
 def personKey(person):
     return person["mAttributes"].get("gender")
-    # if "gender" not in person["mAttributes"]:
-    #     return None
-    # for key in ["male", "female"]:
-    #     if key in person["attributes"]:
-    #         return key
-    # return None
 
 def animalKey(animal):
     animalType = singularOf(animal["name"])
     if animalType == "animal":
         return None
     return animalType
-
-# attribute that related
-# def ctoa(comparative):
-# {
-# "taller than": "height",
-# "larger than": "size",
-# "smaller than": "size",
-# "higher than": "height",
-# "bigger than": "size",
-# "shorter than": "length",
-# "longer than": "length",
-# }
 
 def createComparative(instance, subjId, subjName, objId, objName, comparative, qk):
     # ids = [subjId, objId]
@@ -5328,21 +4426,6 @@ if args.create:
                                         gen(instance, "existMaterialNot", "exist", "existNotT", mapping, data, existAttrk, priority = 3) # existk mat1Prio existAttrk
                                             # done.append("existMaterialNot")
 
-                                # if attrType in ["pose", "activity"]:
-                                #     # existActivity
-                                #     mapping = copy.deepcopy(baseMapping)
-                                #     mapping["inImg"] = inImg()
-                                #     mapping["attribute"] = attr
-                                #     data = {"dobject": {"code": [objDirCode(objId, objName), filterByAttrCode(attr)]}}
-                                #     gen(instance, "existActivity", "exist", mapping, data)
-
-                                #     # existActivityNot
-                                #     cattr = candidateAttr(obj, attr)
-                                #     mapping["cAttribute"] = cattr                        
-                                #     mapping["inImg"] = inImg()
-                                #     data = {"dobject": {"code": [objDirCode(objId, objName), filterByNotAttrCode(cattr)]}}
-                                #     gen(instance, "existActivityNot", "exist", mapping, data)
-
                     others = [(o, 1.3) for o in indToObjs[objName]] + [(o, 1) for o in objWeakAlts(objName)]
                     others = [(o, c) for (o, c) in others if notexists(instance, o)]
                     contextScoreOf = lambda x: ((10 * (contextScore(instance, x, objName) ** 0.4) + 0.01))
@@ -5552,20 +4635,6 @@ if args.create:
                                         data["pointer"] = [objId]
                                         gen(instance, "categoryThatChoose", "chooseObject", "chooseAttrObject", mapping, data, catAttrChoosek, priority = 3) # catMatPrio
 
-                                        # altMapping = copy.deepcopy(mapping)
-                                        # altMapping["dobject"], altMapping["cdobject"] = \
-                                        #     altMapping["cdobject"], altMapping["dobject"]
-                                        # altMapping["aobject"], altMapping["caobject"] = \
-                                        #     altMapping["caobject"], altMapping["aobject"]
-                                        # altMapping["dpobject"], altMapping["cdpobject"] = \
-                                        #     altMapping["cdpobject"], altMapping["dpobject"]                                    
-                                        # altMapping["object"] = other["name"]
-                                        # altMapping["prop"] = "not {}".format(altMapping["prop"])
-                                        # data = getObjCode(otherId, other, cat, attr = attr, nt = True)
-                                        # data["candidates"] = [objName, other["name"]]
-                                        # gen(instance, "categoryThatChoose", "chooseObject", altMapping, data, catAttrChoosek, priority = (2 if coin(0.9) else 1))
-                                        # gen(instance, "categoryThat", "queryObject", mapping, data, catAttrk, priority = (2 if coin(0.9) else 1))
-
                     if isMainObj(obj):
                         maink = getKey()
                         mapping = copy.deepcopy(baseMapping)
@@ -5755,9 +4824,6 @@ if args.create:
                         # alts = attrAlts(obj, attr)
                         cattr = None
                         if isAttrObj(obj["name"]) and attrType is not None and len(typeToAttrs[attrType]) == 1:
-                            # TODO: more refined handling
-                            # all(a not in alts for a in obj["attributes"])
-                            #############  and isUnique(instance, objId) ????????????????
                             objIs = isare(objName)
                             objWas = waswere(objName)
                             objDoes = dodoes(objName)
@@ -5770,7 +4836,6 @@ if args.create:
                             sObject, pObject = formsOf(objName)
                             aany = geta(objName, aany = True)                  
 
-                            ###### MORE INTERESTING REFS!!
                             baseMapping = {"is": objIs, "was": objWas, "does": objDoes, "has": objHas, "ref": ref,
                                 "a": a, "any": aany, "this": objThis, "type": attrType, "types": [attrType], "attribute": attr, 
                                 "sObject": sObject, "pObject": pObject, "object": objName, "oid": objId, "look": look, "how": how()}
@@ -5845,13 +4910,7 @@ if args.create:
                                         # if "verifyMaterialAnd" not in done:
                                         gen(instance, "verifyMaterialAnd", "logicAnd", "verifyAttrAndT", mapping, data, attrAndk2, priority = 3) # matPrio attrOAndk
                                             # done.append("verifyMaterialAnd")
-                                    # else: 
-                                    #     if isAj:
-                                    #         gen(instance, "verifyAttrAndC", "logicAnd", mapping, data)
-                                    #     if attrType == "material":
-                                    #         gen(instance, "verifyMaterialAndC", "logicAnd", mapping, data)
 
-                            ##### FIX!! not attr/material
                             pre = None
                             if isUnique(instance, objId):
                                 alts = objAlts(objName)
@@ -5893,7 +4952,7 @@ if args.create:
                                         gen(instance, "existThatOrC", "logicOr", "existNotOrF", mapping, data, existAttrk) # existk, priority = matPrio existLogick 
 
                             # verifyAttr
-                            if isAj: # and attrNotTrivial(attr, obj):  # ??????????????????????????????                                      
+                            if isAj:                            
                                 mapping = copy.deepcopy(baseMapping)
                                 pre = definedRef(instance, objId, direct = False, short = True, blackAType = [attrType])["ref"] # direct = True
                                 mapping["dobject"], mapping["aobject"], mapping["dpobject"] = pre
@@ -5981,21 +5040,6 @@ if args.create:
                                     data = getObjCode(objId, obj, "person", attr = attr)
                                     data["pointer"] = [objId]
                                     gen(instance, "activityWho", "queryObject", "queryObject", mapping, data, attrkWho)
-
-                                # if attrType in ["activity", "pose"]:
-                                #     # existActivityC
-                                #     mapping = copy.deepcopy(baseMapping)
-                                #     cattr = candidateAttr(obj, attr)
-                                #     mapping["cAttribute"] = cattr                    
-                                #     mapping["inImg"] = inImg()
-                                #     data = {"dobject": {"code": [objDirCode("-", objName), filterByAttrCode(cattr)]}}
-                                #     gen(instance, "existActivityC", "exist", mapping, data)
-
-                                #     # existActivityNotC
-                                #     mapping = copy.deepcopy(baseMapping)
-                                #     mapping["inImg"] = inImg()
-                                #     data = {"dobject": {"code": [objDirCode(objId, objName), filterByNotAttrCode(attr)]}}
-                                #     gen(instance, "existActivityNotC", "exist", mapping, data)
 
                             # company
                             mapping = copy.deepcopy(baseMapping)
@@ -6126,7 +5170,7 @@ if args.create:
                             if attrType == "material":
                                 # materialVerifyC
                                 mapping = copy.deepcopy(baseMapping)
-                                cattr = candidateAttr(instance, obj, attr) # ????????????????????????????
+                                cattr = candidateAttr(instance, obj, attr)
                                 if cattr is not None:
                                     mapping["cAttribute"] = cattr
                                     mapping["dobject"], mapping["aobject"], mapping["dpobject"] = equate(pre) or definedRef(instance, objId, direct = False, short = True, blackAType = [attrType])["ref"]  
@@ -6457,15 +5501,6 @@ if args.create:
                                 # "sId": sId, "sName": sName, 
                                 data = {"dobject": {"code": None, "s": True}, "rel": rel["rel"], "tId": oId, "tName": catwh, "subj": False, "pointer": [oId]} # dsubject
                                 gen(instance, "relO", "queryRel", "queryRel", mapping, data, relok) 
-                                # if whereRel(rel):
-                                #     mapping = copy.deepcopy(omapping)
-                                #     mapping["dsubject"], mapping["asubject"], mapping["dpsubject"] = definedRef(instance, sId, direct = True, answer = True, noSuffix = True)["ref"]
-                                #     mapping["dobject"], mapping["aobject"], mapping["dpobject"] = definedRef(instance, oId, direct = True, answer = True, noSuffix = True)["the"] # , simple = simple, noSuffix = True
-
-                                #     # "sId": sId, "sName": sName, 
-                                #     placeO = "where" if isA(o, "place") else None
-                                #     data = {"dobject": {"code": None}, "rel": rel["rel"], "tId": oId, "tName": placeO, "subj": False} # dsubject
-                                #     gen(instance, "where", "queryRel", mapping, data)                         
 
                             if oCat is not None:
                                 mapping = copy.deepcopy(omapping)
@@ -6560,12 +5595,6 @@ if args.create:
                                 dRef = [(anRef(oName, oId), getObjCode(oId, o, oName, clean = True))], anRef(oName, oId), (dRef[2] if dRef is not None else None)
                                 # oIsDefined = False
                             mapping["dobject"], mapping["aobject"], mapping["dpobject"] = ref or dRef
-                            
-                            # oIsDefined = (mapping["dobject"][0][0].startswith("th")) if len(mapping["dobject"]) > 0 else False
-                            # "sId": sId, "sName": sName, 
-                            # if oIsDefined: ????????????????????????????????????????????????????????????????????????????????????????????
-                            #     data = {"dobject": {"code": None}, "rel": rel["rel"], "tId": sId, "tName": sName, "subj": True, "pointer": [sId, oId]}
-                            # else:
                             data = {"dobject": {"code": None, "s": True}, "rel": rel["rel"], "tId": oId, "tName": oName, "subj": False, "pointer": [sId, oId]}
 
                             # only for rels in ops? otherwise bias
@@ -6623,11 +5652,6 @@ if args.create:
                                 # for orel in alts: 
                                 if orel is not None:
                                     mapping = copy.deepcopy(baseMapping)
-
-                                    # mapping["dsubject"], mapping["asubject"] = definedRef(instance, sId,)["the"] # , short = True #  direct = True, simple = simple, noSuffix = True
-                                    # ref = objRef(oId, oName, orel, q = False) # , q = True
-                                    # mapping["dobject"], mapping["aobject"] = ref or definedRef(instance, oId,)["the"] # , short = True , that = True  direct = True, simple = simple, noSuffix = True
-                                    
                                     mapping["dsubject"], mapping["asubject"], mapping["dpsubject"] = definedRef(instance, sId, direct = direct, short = (not direct), onlyPrefix = direct, simple = simple, blackObjIds = ids, blackRO = rel["rel"])["the"] # noSuffix = True, 
 
                                     ref = objRef(oId, oName, rel["rel"], q = False) # , q = True
@@ -6650,16 +5674,8 @@ if args.create:
                                     data = {"dobject": {"code": None}, "candidates": [rel["rel"], orel], "tId": sId, "tName": sName, "subj": True, "pointer": [sId, oId]}
                                     gen(instance, "relChooser", "chooseRel", "chooseRel", mapping, data, relcck, select = 0.3) # relr1k
             except:
-                print("REDO!!!!!!!!!!!!!!?!?!?!" + imageId)
                 redo.append(imageId)
-
-            # print("1", imageId, len(instance["questions"]))
-
-            # print("RRRR")
-            # print(imageId)
             dedupQuestions(instance) # instance["questions"] = 
-
-            # print("2", imageId, len(instance["questions"]))
 
             instance["rQuestions"] = {}
             for key in instance["key2qids"]:
@@ -6671,27 +5687,12 @@ if args.create:
                     #     chosen["select"] *= 0.67
                     if chosen["select"] == 1.0 or coin(chosen["select"]):
                         instance["rQuestions"][chosen["id"]] = chosen
-                    # print("R", chosen["key"], chosen["question"], chosen["fullAnswer"], chosen["answer"], "->".join(chosen["code"]))
-
-                    # if chosen["group"] in ["exist", "existC"]:
-                    #     chosen["select"] = 0.5
-                    # if chosen["group"] in subtypeUbPostProb:
-                    #     chosen["select"] *= subtypeUbPostProb[chosen["group"]]
 
             instance["sQuestions"] = {qid: q for qid, q in instance["questions"].items() if q["ansDist"]}
             # print(len(instance["sQuestions"]))
             for qid, question in instance["sQuestions"].items():
                 question["question"] = question["question"].replace("type of", "kind of")
                 instance["rQuestions"][qid] = question
-                # print("S", question["key"], question["question"], question["fullAnswer"], question["answer"], "->".join(question["code"]))
-
-            # print("1", instance["rQuestions"].keys())
-            # print("2", instance["questions"].keys())
-            # instance["dQuestions"] = removeDups(instance["rQuestions"])
-            # instance["sQuestions"] = removeDups(instance["sQuestions"])
-            # instance["sQuestions"] = removeDups(instance["sQuestions"])
-                    # print("D", question["key"], question["question"], question["fullAnswer"], question["answer"], "->".join(question["code"]))
-            # print(len(instance["dQuestions"]))
 
             for question in instance["questions"].values():
                 question["entailedQuestions"] = []
@@ -6721,12 +5722,6 @@ if args.create:
                 candidates = [q for q in qs if q["id"] not in instance["rQuestions"]]
                 chosens = sampleUniqueQuestions(candidates)
                 for chosen in chosens:
-                    # if chosen["group"] in ["exist", "existC"]:
-                    #     chosen["select"] = 0.5
-                    # if chosen["group"] in subtypeUbPostProb:
-                    #     chosen["select"] *= subtypeUbPostProb[chosen["group"]]
-                    # if chosen["type"] in ["verify", "choose", "logical"]: # u'verify': 788630, u'compare': 52333, u'choose': 332612, u'logical': 257803, u'query': 1454187})
-                    #     chosen["select"] *= 0.67
                     if chosen["select"] == 1.0 or coin(chosen["select"]):
                         instance["gQuestions"][chosen["id"]] = chosen
 
@@ -6745,12 +5740,6 @@ if args.create:
 
         with open(dataOutFilename1.format(shardIndex), "w") as f:
             json.dump(vgData, f)
-
-            # for q in instance["sQuestions"].values():
-            #     print(q)
-
-            # for q in instance["questions"].values():
-            #     print(q)
 
 def id2name(instance, o):
     if o.startswith("id"):
@@ -6772,12 +5761,7 @@ def getConditional(instance, question):
         # print("none question code", question["question"], question["ccode"])
         if question["ccode"] is None:
             return None # []
-    # if question["type"] in ["logical", "compare"]:
-    #     return None # []
-    # if question["group"] in ["objThisChoose"]: # "activityWho",  "relChooser", 
-    #     return None # []
-    # if question["codeGroup"] == "common":
-    #     return "common" #["common"]
+
     if question["codeGroup"].startswith("verifyState"):
         t, a = re.search(r"!t ([^!]*)!.*!a:([^!]*)!", question["ccode"]).group(1, 2)
         return "01-{}_{}".format(t, a)
@@ -6868,13 +5852,6 @@ if args.stats or args.normalize:
 
         for imageId in vgData: 
             instance = vgData[imageId]
-            # instance["ccode2qids"] = defaultdict(list)            
-            # # print(len(instance["rQuestions"]))
-            # for question in instance["questions"].values():
-            #     question["ccode"] = compactCodeFix(question["ccode"], question["code"], question["answer"], question["codeGroup"], question["group"])
-            #     question["entailed"] = [] if question["ccode"] is None else entailed(question["ccode"], question["codeGroup"])
-            #     if question["ccode"] is not None:
-            #         instance["ccode2qids"][question["ccode"]].append(question["id"])
 
             instance["eQuestions"] = []
             for qid in instance["rQuestions"]:
@@ -6897,10 +5874,6 @@ if args.stats or args.normalize:
 
         with open(dataOutFilename2.format(args.questionPrefix, shardIndex), "w") as f:
             json.dump(vgData, f)
-
-    # final:b = 1, gamma = 1.05, gup = 0.01
-    # first?: b = 3.2, gamma = ?, gup = ?, maxGamma = 1.5
-    # def customSmoother(b = 2, gamma = 1.25, gup = 0.03, maxGamma = 1.4)
 
     printDD(cansCounter, "beforeGlobal")
 
@@ -6953,122 +5926,59 @@ if args.stats or args.normalize:
                 else:
                     # print("BAD: ", question)
                     nonList.append((qid, imageId))
-                # for cond in conds:
 
-    # ratios = unbiasRatios(counters, customSmoother()) # 1 #  
     lsmoother = [2, 1.25, 0.03, 1.4]
     if args.lsmoothPrms != "":
         lsmoother = map(float, args.lsmoothPrms.split())
 
     smtr = uniformSmoother(args.smallThr) if args.uniform else customSmoother(b = lsmoother[0], gamma = lsmoother[1], gup = lsmoother[2], maxGamma = lsmoother[3]) # b = 2, gamma = 1.25, gup = 0.03, maxGamma = 1.4
     ratios = unbiasRatios(counters, smtr) # 1
-    # ratios = unbiasRatios(counters, uniformSmoother(args.smallThr)) # 1
 
     goodIds = unbiasSelect(lists, counters, ratios)
-    # ratios2 = unbiasRatios(counters, funcSmoother(sqrtF, 1))
-    # ratios3 = unbiasRatios(counters, funcSmoother(lnF, 1))
 
-    # printD(typeCounter, "type")
-    # printD(groupCounter, "group")
-    # printD(answerCounter, "answer")
     printDD(ocondAnswerCounter, "beforeLocalO")
     printDD(bcondAnswerCounter, "beforeLocalB")    
     printDD(ocondAnswerCounter, "afterLocalO", ratios["open"]) # 1
     printDD(bcondAnswerCounter, "afterLocalB", ratios["boolean"]) # 1
-    # with open("biasedCounts.json", "w") as f:
-    #     json.dump(ratios, f)
-    # with open("unbiasingRatios.json", "w") as f:
-    #     json.dump(ratios, f)
 
 if args.normalize: # args.newnorm or args.newnorm or 
     print("normalize")
-    # printStats(vgData, "rQuestions")
-    # postProb = ratios(groupCounter)
-    # postProbG = ratios(groupCounterG)
 
     pretypeCounter = defaultdict(int)
     outCounter = defaultdict(int) # {"group": defaultdict(int), "cat": defaultdict(dict)}
-    # for n in ["u1", "u2", "u3"]: # , "final"
-        # outCounters[n] = defaultdict(int) # defaultdict(lambda: defaultdict(int))
 
     for shardIndex in range(shardsNum):
         print("normalized1")
         with open(dataOutFilename3.format(args.questionPrefix, shardIndex)) as f:
             vgData = json.load(f)
 
-        # for imageId in vgData: 
-        #     instance = vgData[imageId]
-
-        #     for question in instance["questions"].values():
-        #         question["entailedQuestions"] = []
-        #         cpatterns = question["entailed"]
-        #         for cpattern in cpatterns:
-        #             for ccode in instance["ccode2qids"]:
-        #                 if match(cpattern, ccode):
-        #                     question["entailedQuestions"] += instance["ccode2qids"][ccode]
-        #         question["entailedQuestions"] = list(set(question["entailedQuestions"]))
-        #         if question["id"] in question["entailedQuestions"]:
-        #             question["entailedQuestions"].remove(question["id"])
-        #         question.pop("entailed")# question["entailed"] = None
-
-        #     instance.pop("ccode2qids")
-
-            # newRQuestions = []
-            # for qid in instance["rQuestions"]:
-            #     question = instance["questions"][qid]
-            #     if (question["type"] not in ["verify", "choose", "logical"]) or coin(0.67):
-            #         newRQuestions.append(qid)
-            # instance["rQuestions"] = newRQuestions    
-
         select(vgData, "utQuestions", goodIds, outCounter, pretypeCounter) # _1 ["u1"] "rQuestions", t
         unbias(vgData, "bgQuestions","ugtQuestions", ratios) # ratios1 gcUg1 =  , outCounters["u1g"] # _1
-        # unbias(vgData, "rQuestions", "u_2Questions", ratios2, outCounters["u2"])
-        # unbias(vgData, "rQuestions", "u_3Questions", ratios3, outCounters["u3"])
 
         with open(dataOutFilename4.format(args.questionPrefix, shardIndex), "w") as f:
             json.dump(vgData, f)
 
     outProb = toRatios(outCounter)
-    # outProb = {} # s s[n]
-    # for n in ["u1", "u2", "u3"]: # , "final"
-        # outProbs[n] = ratios(outCounters[n])
 
     subsets1 = [("500k", lambda: (6 if coin(float(1)/3) else 7)), ("100k", lambda: (1 if coin(float(2)/3) else 2))] # (6 if coin(float(1)/3) else 7) (1 if coin(4/7) else 2) 0.5 0.2 ("1m", 10), 
 
     typeCounterS = defaultdict(int)
     groupCounterS = defaultdict(int)
     ansCounterS = defaultdict(int)
-    # typeDict = defaultdict(int)
 
     for shardIndex in range(shardsNum):
         print("normalized2")
         with open(dataOutFilename4.format(args.questionPrefix, shardIndex)) as f:
             vgData = json.load(f)
 
-        # printDD(outCounter, "out")
         downsampleQuestions(vgData, "utQuestions", "uQuestions", outProb) # , typeDict s["u1"], outCounter = outCounters["final"]
         downsampleQuestions(vgData, "ugtQuestions", "ugQuestions", outProb) # s["u1"]
-        # downsampleQuestions(vgData, "u_2Questions", "u2Questions", outProbs["u2"])
-        # downsampleQuestions(vgData, "u_3Questions", "u3Questions", outProbs["u2"])
 
-    #     with open(dataOutFilename5.format(shardIndex), "w") as f:
-    #         json.dump(vgData, f)
-        # print(typeDict)
         typesampleQuestions(vgData, "uQuestions", "samQuestions", pretypeCounter) 
         typesampleQuestions(vgData, "ugQuestions", "samgQuestions", pretypeCounter) 
 
-        # with open(dataOutFilename5.format(shardIndex), "w") as f:
-        #     json.dump(vgData, f)
-# if args.subsets:
-    # for shardIndex in range(shardsNum):
-    #     print("subsets")
-    #     with open(dataOutFilename5.format(args.questionPrefix, shardIndex)) as f:
-    #         vgData = json.load(f)
         for imageId in vgData: 
             instance = vgData[imageId]
-            # print("3", imageId, len(instance["questions"]), len(instance["uQuestions"]), len(instance["rQuestions"]))
-
-            # instance["suQuestions"] = subuniqueQuestions(instance, instance["uQuestions"], weak = True) # , args.mturk1 instance, 
 
             preSubset = "samQuestions" # suQuestions
             for name, nF in subsets1:
@@ -7079,17 +5989,11 @@ if args.normalize: # args.newnorm or args.newnorm or
                     instance[sName] = []
                 preSubset = sName
 
-            # instance["mturk1"] = multichoice(instance["uQuestions"], args.mturk1) # suQuestions, isDict = True subuniqueQuestions(instance["uQuestions"].values(), args.mturk1) # instance, 
-            # instance["mturk2"] = selectEntailedQuestions(instance, instance["mturk1"], args.mturk2)
-
             for qid in instance["samQuestions"]:
                 question = instance["questions"][qid]
                 typeCounterS[question["type"]] += 1
                 groupCounterS[question["group"]] += 1
                 ansCounterS[question["answer"]] += 1
-
-            # print(instance["mturk1"])
-            # print(instance["mturk2"])
 
         with open(dataOutFilename5.format(args.questionPrefix, shardIndex), "w") as f:
             json.dump(vgData, f)
@@ -7102,38 +6006,6 @@ if args.normalize: # args.newnorm or args.newnorm or
 
     print(redo)
 
-# if args.fix:
-#     subsets1 = [("500k", lambda: (5 if coin(6/7) else 6)), ("100k", lambda: (14 if coin(5/7) else 15))] # 0.5 0.2 ("1m", 10), 
-
-#     for shardIndex in range(shardsNum):
-#         print("fix")
-#         with open(dataOutFilename3.format(shardIndex)) as f:
-#             vgData = json.load(f)
-
-#         for imageId in vgData: 
-#             instance = vgData[imageId]
-#             instance["suQuestions"] = subuniqueQuestions(instance, instance["uQuestions"], weak = True) # , args.mturk1 instance, 
-
-#             # print("3", imageId, len(instance["questions"]), len(instance["uQuestions"]), len(instance["rQuestions"]))
-#             preSubset = "suQuestions"
-#             for name, n in subsets1:
-#                 sName = "subset{}".format(name)
-#                 instance[sName] = subselectQuestions(instance[preSubset], num = n()) #, instance,  prob = proportion + 0.05
-#                 preSubset = sName
-
-#             # print(instance["mturk1"])
-#             # print(instance["mturk2"])
-
-#         with open(dataOutFilename4.format(shardIndex), "w") as f:
-#             json.dump(vgData, f)    
-
-# urls = {}
-# with open("vg14/image_data.json", "r") as f:
-#     imgsInfo = json.load(f)
-#     for imgInfo in imgsInfo:
-#         vgId = str(imgInfo["image_id"])
-#         url = imgInfo["url"]
-#         urls[vgId] = url
 
 def question2rel(question):
     # return question["rel"][1] won't work for same material TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -7155,31 +6027,6 @@ def toUnique(inList):
         if se not in outList:
             outList.append(se)
     return outList
-
-
-# "verifyState": "scene.verify {type}: {attr}"
-# "queryState": "scene.query: {type}"
-# "chooseState": "scene.choose {type}: {|candidates}"
-# "queryAttr": "oid.query: {type}"
-# "verifyAttr": "oid.verify {type}: {attr}"
-# "verifyAttrs": "oid.verify {type}: {attr}.verify {type}: {attr}.and"
-# "chooseAttr": "oid.choose {type}: {|candidates}"
-# "exist": "oid.[filter {t}: not#{a}.]exist"
-# "existRel": "oid.@rel,d@ oid.exist"
-# "logicOr": "oid1.oid2.[filter {t}: not#{a}.]or"
-# "logicAnd": "oid1.oid2.[filter {t}: not#{a}.]and"
-# "queryObject": "oid.query: name"
-# "chooseObject": "oid.choose name: {|candidates}"
-# "queryRel": "oid.@rel,d@ oid.query: name"
-# "verifyRel": "oid.verify rel: @rel,d@ oid"
-# "chooseRel": "oid.choose rel: @|candidates,d@ oid"
-# "chooseObjRel": "oid.@rel,d@ oid.choose name: {|candidates}"
-# "allSame": "{cat}.same: {type}"
-# "allDiff": "{cat}.different: {type}"
-# "compare": "oid.oid.{comparative}"
-# "common": "oid.oid.common {type}"
-# "same": "oid.oid.same {type}"
-# "diff": "oid.oid.different {type}"
 
 def getChoicesNew(instance, question):
     if question["type"] in ["verify", "logical"]:
@@ -7737,48 +6584,23 @@ def histoMatch(hist, tHist, withCond):
     # return float(sa) / na
 
 if args.scores:
-    # datasets = ["all", "samgQuestions", "samQuestions", "subset500k", "subset100k", "subset50k", "subset10k"] # "subset1m", "u2Questions", "u3Questions", "suQuestions", 
-    # qsubs = ["samgQuestions", "samQuestions", "subset500k", "subset100k"] # "subset1m", "u2Questions", "u3Questions", "suQuestions", 
-
     inFormat = "../gqaFinal/a1aa{ds}_{tier}_questions.json"#"../gqaFinal/n{ds}_{tier}_questions.json" 
-    # with open(inFormat.format(ds = args.ds, tier = "train")) as f:
-    #     info1 = json.load(f)
-    # with open("gHist_{}.json".format(args.questionPrefix)) as f:
-    #     tgHisto = json.load(f)
-    # with open("lHist_{}.json".format(args.questionPrefix)) as f:
-    #     tlHisto = json.load(f)
 
     tgHisto = defaultdict(lambda: defaultdict(int))
     tlHisto = defaultdict(lambda: defaultdict(int))
 
     with open(inFormat.format(ds = args.ds, tier = "val")) as f:
         info2 = json.load(f)
-    # with open(inFormat.format(ds = args.ds, tier = "test")) as f:
-    #     info3 = json.load(f)
-    # with open(inFormat.format(ds = args.ds, tier = "ttest")) as f:
-    #     info4 = json.load(f)        
+      
     preds = {}
     for ff in args.scoresFiles:
         with open(ff) as f:
             preds[ff] = json.load(f)
 
-    # allids = set()
     id2tiers = {}
-    # for question in info1["questions"]:
-    #     id2tiers[question["questionId"]] = "train"
-    #     # allids.add(question["questionId"]) 
 
     for question in info2["questions"]:
         id2tiers[question["questionId"]] = "val"
-        # allids.add(question["questionId"]) 
-
-    # for question in info3["questions"]:
-    #     id2tiers[question["questionId"]] = "test"
-    #     # allids.add(question["questionId"]) 
-
-    # for question in info4["questions"]:
-    #     id2tiers[question["questionId"]] = "ttest"
-    #     # allids.add(question["questionId"]) 
 
     file2Scores = {}
     for k in args.scoresFiles:
@@ -7847,12 +6669,6 @@ if args.scores:
     for l in g2ans:
         b2c["gb"][l] = mostCommon(g2ans[l])
 
-    # with open("outGlobalDist.json", "w") as f:
-    #     json.dump(g2ans, f)
-
-    # with open("outLocalDist.json", "w") as f:
-    #     json.dump(l2ans, f)
-
     print(type1Counter)
     print(type2Counter)
 
@@ -7876,20 +6692,6 @@ if args.scores:
             if (i%100):
                 print(i)
             instance = vgData[imageId]
-
-            # graphStats["objs"].append(len(instance["objects"]))
-            # graphStats["attrs"].append(sum(len(o["attributes"]) for o in instance["objects"].values()))
-            # graphStats["allrels"].append(sum(len(o["outRels"]) for o in instance["objects"].values()))
-            # graphStats["rels"].append(sum(len([r for r in o["outRels"].values() if r["rel"] not in ["to the left of", "to the right of"]]) for o in instance["objects"].values()))
-
-            # for obj in instance["objects"].values():
-            #     graphStats["objsDict"][obj["name"]] += 1
-            #     for cat in refCats(obj):
-            #         graphStats["catsDict"][cat] += 1
-            #     for attr in obj["attributes"]:
-            #         graphStats["attrsDict"][attr] += 1
-            #     for rel in obj["outRels"].values():
-            #         graphStats["relsDict"][rel["rel"]] += 1
 
             coverage = defaultdict(lambda: defaultdict(list))
             for qid in instance["questions"]:
@@ -8056,55 +6858,5 @@ if args.scores:
     with open("file2Scores{}.json".format(args.scoresSuffix), "w") as f:
         json.dump(file2Scores, f)
 
-    # print(file2Scores)
     print("uniqueAllNum", len(allQuestions))
     print("uniqueSamNum", len(allSamQuestions))
-
-    # for question in instance["mturk1"].values():
-        # print("D2", question["id"], question["key"], question["question"], question["fullAnswer"], question["answer"], "->".join(question["code"]))
-
-    # for question in instance["mturk2"].values():
-        # print("E2", question["id"], question["key"], question["question"], question["fullAnswer"], question["answer"], "->".join(question["code"]))
-
-# printStats("suQuestions")
-
-# for i, imageId in enumerate(vgData): 
-#     instance = vgData[imageId]    
-#     questionGroups = ["rQuestions", "sQuestions", "gQuestions", "uQuestions", "suQuestions", "ugQuestions"] + \
-#         ["subset{}".format(n) for n,_ in subsets1] + ["mturk1", "mturk2"] # "questions",  + ["subset{}".format(n) for n in subsets2] 
-#     for group in questionGroups:
-#         instance[group] = [question["id"] for question in instance[group].values()]
-    
-# allQuestions = 0
-# for i, imageId in enumerate(keys): 
-#     instance = vgData[imageId]
-#     instance["tier"] = tierOf(i)
-#     allQuestions += len(instance["uQuestions"])
-
-# sizes = [10000, 50000, 100000, 500000, 1000000]
-# subsets = [(float(1000000) / allQuestions, "1m"), (0.5, "500k"), (0.2, "100k"), (0.5, "50k"), (0.2, "10k")]
-# subsets2 = [(0.5, "50k"), (0.2, "10k")]
-
-# gpostProb = ratios(gcounterG)
-# print(gpostProb)
-
-# ugcounter = defaultdict(int)
-# ugcounterG = defaultdict(int)
-
-# for i, imageId in enumerate(vgData): 
-#     instance = vgData[imageId]
-#     instance["ugQuestions"] = {}
-#     for qid, question in instance["gQuestions"].items():
-#         if (question["group"] not in gpostProb) or coin(gpostProb[question["group"]]):
-#            instance["ugQuestions"][qid] = question
-#            ugcounter[question["type"]] += 1
-#            ugcounterG[question["group"]] += 1
-
-# for c in sorted(ugcounterG.keys()):
-#     print(c, ugcounterG[c])
-
-# questionSubtypes = [
-#     (["diffAnimals"], ["diffAnimalsC"]),
-#     (["diffGender"], ["diffGenderC"]),
-#     (["exist"], ["existC"]),
-#     (["existAnd"], ["existAndC"]),
