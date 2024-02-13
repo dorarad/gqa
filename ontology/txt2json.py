@@ -1,9 +1,11 @@
+# Translates the txt ontology to json ontology.
+
 import json
 from collections import defaultdict
 import en
 
 def rels():
-	relsIn = open("cRels.py")
+	relsIn = open("r.py")
 	relsOut = open("cRelsNV.json","w")
 	# relsCatsOut = open("cAttrsCats.json","w")
 
