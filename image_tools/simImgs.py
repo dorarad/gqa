@@ -1,3 +1,5 @@
+# Computes image similarity across different sets
+
 import json
 import h5py
 import argparse
