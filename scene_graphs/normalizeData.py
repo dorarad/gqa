@@ -1,4 +1,5 @@
-# Normalize the visual genome data and translate it into scene graph json.
+# Normalize the visual genome data and translate it into scene graph json
+# (dictionaries of objects, attributes and relations).
 # This code is very specific to visual genome, and contains a lot of manual curation of the data.
 
 from collections import defaultdict
