@@ -1,5 +1,5 @@
-# GQA
+# GQA Question Synthesis Engine
 The official source code for generating the GQA questions.
-More details and instructions will be added soon!
-See further information about GQA here: [gqadataset.org](https://www.gqadataset.org)
+<br> More details and instructions will be added soon!
+<br> See further information about GQA here: [gqadataset.org](https://www.gqadataset.org)
 
