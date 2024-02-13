@@ -9,4 +9,4 @@ In objects.txt: object name,frequency,category name,annotations
 In attributes.txt: attribute name;frequency;attribute type;annotations
 In relations.txt: relation,frequency,relation type,annotations
 
-See txt2json.py for the definition of specific extra annotations. 
+See [txt2json.py](txt2json.py) for the definition of specific extra annotations. 
